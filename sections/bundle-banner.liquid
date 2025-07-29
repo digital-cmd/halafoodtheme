@@ -1,0 +1,192 @@
+{%- comment -%}
+  Bundle Banner Section - Multi-Bundle Support
+  Now supports multiple bundle types with customizable settings
+{%- endcomment -%}
+<section class="bundle-banner-section bundle-banner--{{ section.settings.bundle_type }}">
+  <div class="t4s-container">
+    <div class="bundle-banner-content">
+      <h2 class="bundle-banner-title">
+        {%- if shop.locale == 'ar' -%}
+          🎁 {{ section.settings.title_ar | default: 'أنشئ باقتك الخاصة' }}
+        {%- else -%}
+          🎁 {{ section.settings.title_en | default: 'Create Your Bundle' }}
+        {%- endif -%}
+      </h2>
+      <p class="bundle-banner-subtitle">
+        {%- if shop.locale == 'ar' -%}
+          {{ section.settings.subtitle_ar | default: 'اختر منتجاتك المفضلة بسعر مخفض' }}
+        {%- else -%}
+          {{ section.settings.subtitle_en | default: 'Choose your favorite products at a discounted price' }}
+        {%- endif -%}
+      </p>
+      <a href="{{ section.settings.bundle_url | default: '/collections/bundle-1' }}" class="bundle-banner-button">
+        {%- if shop.locale == 'ar' -%}
+          {{ section.settings.button_text_ar | default: 'ابدأ الاختيار' }}
+        {%- else -%}
+          {{ section.settings.button_text_en | default: 'Start Selection' }}
+        {%- endif -%}
+      </a>
+    </div>
+  </div>
+</section>
+<style>
+  .bundle-banner-section {
+    padding: 60px 0;
+    background: linear-gradient(135deg, #ED6451, #d4503f);
+    text-align: center;
+    margin: 40px 0;
+  }
+  
+  /* Different colors for different bundle types */
+  .bundle-banner--bundle-5 {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+  }
+  
+  .bundle-banner--bundle-10 {
+    background: linear-gradient(135deg, #437C30, #356625);
+  }
+  
+  .bundle-banner--bundle-15 {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  }
+  
+  .bundle-banner-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .bundle-banner-title {
+    color: white;
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .bundle-banner-subtitle {
+    color: white;
+    font-size: 24px;
+    margin-bottom: 30px;
+    opacity: 0.95;
+  }
+  
+  .bundle-banner-button {
+    display: inline-block;
+    background: white;
+    color: #ED6451;
+    padding: 20px 50px;
+    font-size: 20px;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  }
+  
+  .bundle-banner--bundle-5 .bundle-banner-button {
+    color: #3498db;
+  }
+  
+  .bundle-banner--bundle-10 .bundle-banner-button {
+    color: #437C30;
+  }
+  
+  .bundle-banner--bundle-15 .bundle-banner-button {
+    color: #9b59b6;
+  }
+  
+  .bundle-banner-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+    background: #f8f8f8;
+  }
+  
+  @media (max-width: 768px) {
+    .bundle-banner-title {
+      font-size: 32px;
+    }
+    
+    .bundle-banner-subtitle {
+      font-size: 18px;
+    }
+    
+    .bundle-banner-button {
+      font-size: 18px;
+      padding: 16px 40px;
+    }
+  }
+</style>
+{%- schema -%}
+{
+  "name": "Bundle Banner",
+  "settings": [
+    {
+      "type": "select",
+      "id": "bundle_type",
+      "label": "Bundle Type",
+      "options": [
+        {
+          "value": "bundle-5",
+          "label": "5 Products Bundle"
+        },
+        {
+          "value": "bundle-10",
+          "label": "10 Products Bundle"
+        },
+        {
+          "value": "bundle-15",
+          "label": "15 Products Bundle"
+        }
+      ],
+      "default": "bundle-10"
+    },
+    {
+      "type": "text",
+      "id": "bundle_url",
+      "label": "Bundle Collection URL",
+      "default": "/collections/bundle-1",
+      "info": "Enter the URL of your bundle collection"
+    },
+    {
+      "type": "text",
+      "id": "title_en",
+      "label": "Title (English)",
+      "default": "Create Your Bundle"
+    },
+    {
+      "type": "text",
+      "id": "title_ar",
+      "label": "Title (Arabic)",
+      "default": "أنشئ باقتك الخاصة"
+    },
+    {
+      "type": "text",
+      "id": "subtitle_en",
+      "label": "Subtitle (English)",
+      "default": "Choose any 10 products for only €17.99"
+    },
+    {
+      "type": "text",
+      "id": "subtitle_ar",
+      "label": "Subtitle (Arabic)",
+      "default": "اختر أي 10 منتجات مقابل 17.99 يورو فقط"
+    },
+    {
+      "type": "text",
+      "id": "button_text_en",
+      "label": "Button Text (English)",
+      "default": "Start Selection"
+    },
+    {
+      "type": "text",
+      "id": "button_text_ar",
+      "label": "Button Text (Arabic)",
+      "default": "ابدأ الاختيار"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Bundle Banner"
+    }
+  ]
+}
+{%- endschema -%}
