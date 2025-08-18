@@ -1,0 +1,268 @@
+{% comment %}theme-check-disable ImgLazyLoading{% endcomment %}
+{{ 'component-collection-hero.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .collection-hero--with-image .collection-hero__title{
+    text-transform: {{ section.settings.font_style }};
+  }
+  .collection-hero__title, .collection-hero--with-image .collection-hero__description{
+    text-align: {{ section.settings.main_title_alignment }};
+  }
+  .collection-banne_bg {
+    padding: 20px;
+    background: {{ section.settings.collection_banner_bg }};
+    border-radius: var(--media-radius);
+  }
+  .collection-hero__title{
+    color: {{ section.settings.collection_banner_text }};
+  }
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding-top }}px;
+    padding-bottom: {{ section.settings.padding-bottom }}px;
+  }
+  @media screen and (max-width: 1429px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-1429 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-1429 }}px;
+    }
+  }
+  @media screen and (max-width: 1199px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-1199 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-1199 }}px;
+    }
+  }
+  @media screen and (max-width: 991px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-991 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-991 }}px;
+    }
+  }
+  @media screen and (max-width: 767px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-767 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-767 }}px;
+    }
+  }
+  @media screen and (max-width: 575px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-575 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-575 }}px; 
+    }
+  }
+{%- endstyle -%}
+
+<div class="collection-hero{% if section.settings.show_collection_image and collection.image %} collection-hero--with-image{% endif %} section-{{ section.id }}-padding">
+  <div class="collection-hero__inner page-width {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+    <div class="collection-banne_bg">
+      <div class="collection-hero__text-wrapper">
+        <h1 class="collection-hero__title  title title--primary inline-richtext{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+          <span class="visually-hidden">{{ 'sections.collection_template.title' | t }}: </span>
+          {{- collection.title | escape -}}
+        </h1>
+        {%- if section.settings.show_collection_description -%}
+          <div class="collection-hero__description rte theme_main_description">{{ collection.description }}</div>
+        {%- endif -%}
+      </div>
+  
+      {%- if section.settings.show_collection_image and collection.image -%}
+        <div class="collection-hero__image-container media gradient">
+          <img
+            srcset="
+              {%- if collection.image.width >= 165 -%}{{ collection.image | image_url: width: 165 }} 165w,{%- endif -%}
+              {%- if collection.image.width >= 360 -%}{{ collection.image | image_url: width: 360 }} 360w,{%- endif -%}
+              {%- if collection.image.width >= 535 -%}{{ collection.image | image_url: width: 535 }} 535w,{%- endif -%}
+              {%- if collection.image.width >= 750 -%}{{ collection.image | image_url: width: 750 }} 750w,{%- endif -%}
+              {%- if collection.image.width >= 1070 -%}{{ collection.image | image_url: width: 1070 }} 1070w,{%- endif -%}
+              {%- if collection.image.width >= 1500 -%}{{ collection.image | image_url: width: 1500 }} 1500w,{%- endif -%}
+              {{ collection.image | image_url }} {{ collection.image.width }}w
+            "
+            src="{{ collection.image | image_url: width: 750 }}"
+            sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px, (min-width: 750px) calc(50vw - 130px), calc(50vw - 55px)"
+            alt=""
+            width="{{ collection.image.width }}"
+            height="{{ collection.image.height }}"
+          >
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main-collection-banner.name",
+  "class": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:sections.main-collection-banner.settings.paragraph.content"
+    },
+    {
+      "type": "select",
+      "id": "main_title_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.main-collection-banner.left"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.main-collection-banner.center"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.main-collection-banner.right"
+        }
+      ],
+      "default": "center",
+      "label": "t:sections.main-collection-banner.main_title_alignment"
+    },
+    {
+      "type": "select",
+      "id": "font_style",
+      "options": [
+        {
+          "value": "capitalize",
+          "label": "t:sections.main-collection-banner.capitalize"
+        },
+        {
+          "value": "lowercase",
+          "label": "t:sections.main-collection-banner.lowercase"
+        },
+        {
+          "value": "uppercase",
+          "label": "t:sections.main-collection-banner.uppercase"
+        }
+      ],
+      "default": "uppercase",
+      "label": "t:sections.main-collection-banner.title_font_style"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_description",
+      "default": true,
+      "label": "t:sections.main-collection-banner.settings.show_collection_description.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_image",
+      "default": false,
+      "label": "t:sections.main-collection-banner.settings.show_collection_image.label",
+      "info": "t:sections.main-collection-banner.settings.show_collection_image.info"
+    },
+    {
+      "type": "color",
+      "id": "collection_banner_bg",
+      "label": "t:sections.main-collection-banner.banner_bg",
+      "default": "#f3f3f3"
+    },
+    {
+      "type": "color",
+      "id": "collection_banner_text",
+      "label": "Banner text color",
+      "default": "#333333"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "number",
+      "id": "padding-top",
+      "label": "Padding top",
+      "default": 60
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom",
+      "label": "Padding bottom",
+      "default": 60
+    },
+    {
+      "type": "header",
+      "content": "Screen wise section padding"
+    },
+    {
+      "type": "header",
+      "content": "@media screen 1429"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-1429",
+      "label": "Padding top",
+      "default": 50
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-1429",
+      "label": "Padding bottom",
+      "default": 50
+    },
+    {
+      "type": "header",
+      "content": "@media screen 1199"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-1199",
+      "label": "Padding top",
+      "default": 45
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-1199",
+      "label": "Padding bottom",
+      "default": 45
+    },
+    {
+      "type": "header",
+      "content": "@media screen 991"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-991",
+      "label": "Padding top",
+      "default": 40
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-991",
+      "label": "Padding bottom",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "@media screen 767"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-767",
+      "label": "Padding top",
+      "default": 35
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-767",
+      "label": "Padding bottom",
+      "default": 35
+    },
+    {
+      "type": "header",
+      "content": "@media screen 575"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-575",
+      "label": "Padding top",
+      "default": 30
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-575",
+      "label": "Padding bottom",
+      "default": 30
+    }
+  ]
+}
+{% endschema %}

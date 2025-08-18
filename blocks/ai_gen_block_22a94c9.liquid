@@ -1,0 +1,693 @@
+{% doc %}
+  @prompt
+    a language toggle to switch between languages
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-language-toggle-{{ ai_gen_id }} {
+    position: relative;
+    display: inline-block;
+  }
+
+  .ai-language-toggle-button-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: {{ block.settings.padding_vertical }}px {{ block.settings.padding_horizontal }}px;
+    background-color: {{ block.settings.background_color }};
+    color: {{ block.settings.text_color }};
+    border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    cursor: pointer;
+    font-size: {{ block.settings.font_size }}px;
+    font-weight: {{ block.settings.font_weight }};
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .ai-language-toggle-button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.hover_background_color }};
+    color: {{ block.settings.hover_text_color }};
+    border-color: {{ block.settings.hover_border_color }};
+  }
+
+  .ai-language-toggle-icon-{{ ai_gen_id }} {
+    width: {{ block.settings.icon_size }}px;
+    height: {{ block.settings.icon_size }}px;
+    transition: transform 0.3s ease;
+  }
+
+  .ai-language-toggle-dropdown-{{ ai_gen_id }} {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: {{ block.settings.dropdown_background_color }};
+    border: 1px solid {{ block.settings.dropdown_border_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;margin-top: 4px;
+    min-width: 200px;
+  }
+
+  .ai-language-toggle-dropdown-{{ ai_gen_id }}.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .ai-language-toggle-option-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: {{ block.settings.dropdown_text_color }};
+    text-decoration: none;
+    border-bottom: 1px solid {{ block.settings.dropdown_border_color }};
+    transition: background-color 0.2s ease;
+    font-size: {{ block.settings.font_size }}px;
+  }
+
+  .ai-language-toggle-option-{{ ai_gen_id }}:last-child {
+    border-bottom: none;
+  }
+
+  .ai-language-toggle-option-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.dropdown_hover_color }};
+  }
+
+  .ai-language-toggle-option-{{ ai_gen_id }}.current {
+    background-color: {{ block.settings.dropdown_active_color }};
+    font-weight: 600;
+  }
+
+  .ai-language-toggle-flag-{{ ai_gen_id }} {
+    width: 20px;
+    height: 15px;
+    border-radius: 2px;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+  }
+
+  .ai-language-toggle-current-flag-{{ ai_gen_id }} {
+    width: {{ block.settings.icon_size }}px;
+    height: calc({{ block.settings.icon_size }}px * 0.75);
+    border-radius: 2px;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+  }
+
+  .ai-language-toggle-{{ ai_gen_id }}[data-style="minimal"] .ai-language-toggle-button-{{ ai_gen_id }} {
+    background-color: transparent;
+    border: none;
+    padding: 8px;
+  }
+
+  .ai-language-toggle-{{ ai_gen_id }}[data-style="minimal"] .ai-language-toggle-button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.hover_background_color }};
+  }
+
+  .ai-language-toggle-{{ ai_gen_id }}[data-style="pill"] .ai-language-toggle-button-{{ ai_gen_id }} {
+    border-radius: 50px;
+  }
+
+  .ai-language-toggle-{{ ai_gen_id }}[data-style="pill"] .ai-language-toggle-dropdown-{{ ai_gen_id }} {
+    border-radius: 12px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-language-toggle-dropdown-{{ ai_gen_id }} {
+      position: fixed;
+      top: auto;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      border-radius: 16px 16px 0 0;
+      margin-top: 0;
+      min-width: auto;
+      max-height: 50vh;
+      overflow-y: auto;
+    }
+
+    .ai-language-toggle-dropdown-{{ ai_gen_id }}.active {
+      transform: translateY(0);
+    }
+
+    .ai-language-toggle-dropdown-{{ ai_gen_id }}:not(.active) {
+      transform: translateY(100%);
+    }
+  }
+{% endstyle %}
+
+<language-toggle-{{ ai_gen_id }}
+  class="ai-language-toggle-{{ ai_gen_id }}"
+  data-style="{{ block.settings.toggle_style }}"
+  {{ block.shopify_attributes }}
+>
+  <button
+    class="ai-language-toggle-button-{{ ai_gen_id }}"
+    aria-expanded="false"
+    aria-haspopup="true"
+    aria-label="Select language"
+  >
+    {% if block.settings.show_flag %}
+      <div
+        class="ai-language-toggle-current-flag-{{ ai_gen_id }}"
+        style="background-image: url('{{ block.settings.current_flag_image | image_url: width: 40 }}')"
+      ></div>
+    {% endif %}
+    
+    {% if block.settings.display_format == 'code' %}
+      <span>{{ block.settings.current_language_code }}</span>
+    {% elsif block.settings.display_format == 'name' %}
+      <span>{{ block.settings.current_language_name }}</span>
+    {% else %}
+      <span>{{ block.settings.current_language_code }} - {{ block.settings.current_language_name }}</span>
+    {% endif %}
+
+    {% if block.settings.show_arrow %}
+      <svg
+        class="ai-language-toggle-icon-{{ ai_gen_id }}"
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="6,9 12,15 18,9"></polyline>
+      </svg>
+    {% endif %}
+  </button>
+
+  <div class="ai-language-toggle-dropdown-{{ ai_gen_id }}">
+    {% for i in (1..5) %}
+      {% liquid
+        assign language_enabled_key = 'language_' | append: i | append: '_enabled'
+        assign language_code_key = 'language_' | append: i | append: '_code'
+        assign language_name_key = 'language_' | append: i | append: '_name'
+        assign language_url_key = 'language_' | append: i | append: '_url'
+        assign language_flag_key = 'language_' | append: i | append: '_flag'
+
+        assign language_enabled = block.settings[language_enabled_key]
+        assign language_code = block.settings[language_code_key]
+        assign language_name = block.settings[language_name_key]
+        assign language_url = block.settings[language_url_key]
+        assign language_flag = block.settings[language_flag_key]
+      %}
+
+      {% if language_enabled and language_code != blank and language_name != blank %}<a
+          href="{% if language_url != blank %}{{ language_url }}{% else %}#{% endif %}"
+          class="ai-language-toggle-option-{{ ai_gen_id }} {% if language_code == block.settings.current_language_code %}current{% endif %}"
+          data-language="{{ language_code }}"
+        >
+          {% if block.settings.show_flag and language_flag %}
+            <div
+              class="ai-language-toggle-flag-{{ ai_gen_id }}"
+              style="background-image: url('{{ language_flag | image_url: width: 40 }}')"
+            ></div>
+          {% endif %}
+          
+          {% if block.settings.display_format == 'code' %}
+            <span>{{ language_code }}</span>
+          {% elsif block.settings.display_format == 'name' %}
+            <span>{{ language_name }}</span>
+          {% else %}
+            <span>{{ language_code }} - {{ language_name }}</span>
+          {% endif %}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+</language-toggle-{{ ai_gen_id }}><script>
+  (function() {
+    classLanguageToggle{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.button = this.querySelector('.ai-language-toggle-button-{{ ai_gen_id }}');
+        this.dropdown = this.querySelector('.ai-language-toggle-dropdown-{{ ai_gen_id }}');
+        this.options = this.querySelectorAll('.ai-language-toggle-option-{{ ai_gen_id }}');
+        this.icon = this.querySelector('.ai-language-toggle-icon-{{ ai_gen_id }}');
+      }
+
+      connectedCallback() {
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        this.button.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.toggleDropdown();
+        });
+
+        this.options.forEach(option => {
+          option.addEventListener('click', (e) => {
+            if (option.getAttribute('href') === '#') {
+              e.preventDefault();
+            }
+            this.closeDropdown();
+          });
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!this.contains(e.target)) {
+            this.closeDropdown();
+          }
+        });document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            this.closeDropdown();
+          }
+        });
+      }
+
+      toggleDropdown() {
+        const isOpen = this.dropdown.classList.contains('active');
+        if (isOpen) {
+          this.closeDropdown();
+        } else {
+          this.openDropdown();
+        }
+      }
+
+      openDropdown() {
+        this.dropdown.classList.add('active');
+        this.button.setAttribute('aria-expanded', 'true');
+        if (this.icon) {
+          this.icon.style.transform = 'rotate(180deg)';
+        }
+      }
+
+      closeDropdown() {
+        this.dropdown.classList.remove('active');
+        this.button.setAttribute('aria-expanded', 'false');
+        if (this.icon) {
+          this.icon.style.transform = 'rotate(0deg)';
+        }
+      }
+    }
+
+    customElements.define('language-toggle-{{ ai_gen_id }}', LanguageToggle{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Language toggle",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Current language"
+    },
+    {
+      "type": "text",
+      "id": "current_language_code",
+      "label": "Current language code",
+      "default": "EN"
+    },
+    {
+      "type": "text",
+      "id": "current_language_name",
+      "label": "Current language name",
+      "default": "English"
+    },
+    {
+      "type": "image_picker",
+      "id": "current_flag_image",
+      "label": "Current language flag"
+    },
+    {
+      "type": "header",
+      "content": "Display options"
+    },
+    {
+      "type": "select",
+      "id": "display_format",
+      "label": "Display format",
+      "options": [
+        {
+          "value": "code",
+          "label": "Code only"
+        },
+        {
+          "value": "name",
+          "label": "Name only"
+        },
+        {
+          "value": "both",
+          "label": "Code and name"
+        }
+      ],
+      "default": "code"
+    },
+    {
+      "type": "select",
+      "id": "toggle_style",
+      "label": "Toggle style",
+      "options": [
+        {
+          "value": "default",
+          "label": "Default"
+        },
+        {
+          "value": "minimal",
+          "label": "Minimal"
+        },
+        {
+          "value": "pill",
+          "label": "Pill"
+        }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_flag",
+      "label": "Show flags",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrow",
+      "label": "Show dropdown arrow",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Language1"
+    },
+    {
+      "type": "checkbox",
+      "id": "language_1_enabled",
+      "label": "Enable language 1",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "language_1_code",
+      "label": "Language code",
+      "default": "ES"
+    },
+    {
+      "type": "text",
+      "id": "language_1_name",
+      "label": "Language name",
+      "default": "Español"
+    },
+    {
+      "type": "url",
+      "id": "language_1_url",
+      "label": "Language URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "language_1_flag",
+      "label": "Flag image"
+    },
+    {
+      "type": "header",
+      "content": "Language 2"
+    },
+    {
+      "type": "checkbox",
+      "id": "language_2_enabled",
+      "label": "Enable language 2",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "language_2_code",
+      "label": "Language code",
+      "default": "FR"
+    },
+    {
+      "type": "text",
+      "id": "language_2_name",
+      "label": "Language name",
+      "default": "Français"
+    },
+    {
+      "type": "url",
+      "id": "language_2_url",
+      "label": "Language URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "language_2_flag",
+      "label": "Flag image"
+    },
+    {
+      "type": "header",
+      "content": "Language 3"
+    },
+    {
+      "type": "checkbox",
+      "id": "language_3_enabled",
+      "label": "Enable language 3",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "language_3_code",
+      "label": "Language code",
+      "default": "DE"
+    },
+    {
+      "type": "text",
+      "id": "language_3_name",
+      "label": "Language name",
+      "default": "Deutsch"
+    },
+    {
+      "type": "url",
+      "id": "language_3_url",
+      "label": "Language URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "language_3_flag",
+      "label": "Flag image"
+    },
+    {
+      "type": "header",
+      "content": "Language 4"
+    },
+    {
+      "type": "checkbox",
+      "id": "language_4_enabled",
+      "label": "Enable language 4",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "language_4_code",
+      "label": "Language code",
+      "default": "IT"
+    },
+    {
+      "type": "text",
+      "id": "language_4_name",
+      "label": "Language name",
+      "default": "Italiano"
+    },
+    {
+      "type": "url",
+      "id": "language_4_url",
+      "label": "Language URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "language_4_flag",
+      "label": "Flag image"
+    },
+    {
+      "type": "header",
+      "content": "Language 5"
+    },
+    {
+      "type": "checkbox",
+      "id": "language_5_enabled",
+      "label": "Enable language 5",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "language_5_code",
+      "label": "Language code",
+      "default": "PT"
+    },
+    {
+      "type": "text",
+      "id": "language_5_name",
+      "label": "Language name",
+      "default": "Português"
+    },
+    {
+      "type": "url",
+      "id": "language_5_url",
+      "label": "Language URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "language_5_flag",
+      "label": "Flag image"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "font_weight",
+      "min": 300,
+      "max": 900,
+      "step": 100,
+      "label": "Font weight",
+      "default": 400
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "min": 12,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "label": "Icon size",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_horizontal",
+      "min": 8,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Horizontal padding",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_vertical",
+      "min": 4,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Vertical padding",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Border width",
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#e5e5e5"
+    },
+    {
+      "type": "color",
+      "id": "hover_background_color",
+      "label": "Hover background color",
+      "default": "#f5f5f5"
+    },
+    {
+      "type": "color",
+      "id": "hover_text_color",
+      "label": "Hover text color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "hover_border_color",
+      "label": "Hover border color",
+      "default": "#cccccc"
+    },
+    {
+      "type": "color",
+      "id": "dropdown_background_color",
+      "label": "Dropdown background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "dropdown_text_color",
+      "label": "Dropdown text color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "dropdown_border_color",
+      "label": "Dropdown border color",
+      "default": "#e5e5e5"
+    },
+    {
+      "type": "color",
+      "id": "dropdown_hover_color",
+      "label": "Dropdown hover color",
+      "default": "#f5f5f5"
+    },
+    {
+      "type": "color",
+      "id": "dropdown_active_color",
+      "label": "Dropdown active color",
+      "default": "#e8f4fd"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Language toggle"
+    }
+  ]
+}
+{% endschema %}

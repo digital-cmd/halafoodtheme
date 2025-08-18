@@ -1,29 +1,189 @@
-{%- assign link = section.settings.link | default: routes.root_url -%}
-
-<div class="error-404-wrap t4s-text-center t4s-empty__page">
-	<div class="t4s-container">
-     <h1 class="error-404-title">{{ 'templates.404.title' | t }}</h1>
-     <h3 class="error-404-subtext">{{ 'templates.404.subtext' | t }}</h3>
-     <p class="error-404-link">{{ 'templates.404.link_html' | t: link:link }}</p>
-	</div>
+<div class="template-404 page-width center section-{{ section.id }}-padding">
+  {% render 'icon-404' %}
+  <div class="theme_main_heading h2">
+    {{ 'templates.404.sub_title' | t }}
+  </div>
+  <div class="theme_main_heading h2">
+    {{ 'templates.404.title' | t }}
+  </div>
+  <div class="page-buttons">
+    <a href="{{ routes.all_products_collection_url }}" class="button theme_buttons">
+      {{ 'general.continue_shopping' | t }}
+    </a>
+    <a href="/" class="button theme_buttons">
+      {{ 'general.back_home' | t }}
+    </a>
+  </div>
 </div>
-<style>
-.error-404.not-found{letter-spacing:2px}.error-404.not-found h1{font-size:80px;letter-spacing:8px;font-weight:700;margin:0 0 5px}.error-404.not-found h3{text-transform:uppercase;font-size:18px;margin:0 0 15px}
-.error-404.not-found a{font-weight:700;border-bottom:1px solid #222;padding:2px 5px}
-.error-404.not-found a:hover{background:#222;color:#fff}
-</style>
 
-{%- schema -%}
+{% style %}
+  .template-404 svg {
+    max-width: 300px;
+    width: 100%;
+  }
+  .template-404 p{
+    color: {{ settings.content_color }};
+  }
+  .template-404 .theme_main_heading{
+    color: {{ settings.theme_heading_color }};
+    margin-bottom: 30px;
+  }
+  .template-404 .theme_buttons{
+    background: {{ settings.button_bg }};
+    color:{{ settings.button_text }};
+  }
+  .template-404 .theme_buttons:hover{
+    background: {{ settings.button_hr_bg }};
+    color:{{ settings.button_hr_text }};
+  }
+  .template-404 .title + * {
+    margin-top: 1rem;
+  }
+  .template-404 {
+    padding-top: {{ section.settings.padding-top }}px;
+    padding-bottom: {{ section.settings.padding-bottom }}px;
+  }
+  @media screen and (max-width: 1429px) {
+    .template-404 {
+      padding-top: {{ section.settings.padding-top-1429 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-1429 }}px;
+    }
+  }
+  @media screen and (max-width: 1199px) {
+    .template-404 {
+      padding-top: {{ section.settings.padding-top-1199 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-1199 }}px;
+    }
+  }
+  @media screen and (max-width: 991px) {
+    .template-404 {
+      padding-top: {{ section.settings.padding-top-991 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-991 }}px;
+    }
+  }
+  @media screen and (max-width: 767px) {
+    .template-404 {
+      padding-top: {{ section.settings.padding-top-767 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-767 }}px;
+    }
+  }
+  @media screen and (max-width: 575px) {
+    .template-404 {
+      padding-top: {{ section.settings.padding-top-575 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-575 }}px; 
+    }
+  }
+  @media screen and (min-width: 750px) {
+    .template-404 .title + * {
+      margin-top: 2rem;
+    }
+  }
+{% endstyle %}
+
+{% schema %}
 {
-  "name": "404",
-  "tag": "section",
-  "class": "t4s-section t4s-section-main error-404 not-found t4s-pr t4s-oh",
+  "name": "Main 404",
   "settings": [
-      {
-        "type": "url",
-        "id": "link",
-        "label": "Link Button"
-      }
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "number",
+      "id": "padding-top",
+      "label": "Padding top",
+      "default": 60
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom",
+      "label": "Padding bottom",
+      "default": 60
+    },
+    {
+      "type": "header",
+      "content": "Screen wise section padding"
+    },
+    {
+      "type": "header",
+      "content": "@media screen 1429"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-1429",
+      "label": "Padding top",
+      "default": 50
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-1429",
+      "label": "Padding bottom",
+      "default": 50
+    },
+    {
+      "type": "header",
+      "content": "@media screen 1199"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-1199",
+      "label": "Padding top",
+      "default": 45
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-1199",
+      "label": "Padding bottom",
+      "default": 45
+    },
+    {
+      "type": "header",
+      "content": "@media screen 991"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-991",
+      "label": "Padding top",
+      "default": 40
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-991",
+      "label": "Padding bottom",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "@media screen 767"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-767",
+      "label": "Padding top",
+      "default": 35
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-767",
+      "label": "Padding bottom",
+      "default": 35
+    },
+    {
+      "type": "header",
+      "content": "@media screen 575"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-575",
+      "label": "Padding top",
+      "default": 30
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-575",
+      "label": "Padding bottom",
+      "default": 30
+    }
   ]
 }
 {% endschema %}

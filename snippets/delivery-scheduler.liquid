@@ -1,0 +1,948 @@
+{% comment %}
+  Enhanced Delivery Scheduler with Metafields Support - COMPLETE WORKING VERSION
+  Usage: {% render 'delivery-scheduler-complete' %}
+  Place this in your theme.liquid before closing </body> tag
+{% endcomment %}
+
+<style>
+  /* Delivery Scheduler Modal Styles */
+  .delivery-scheduler-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 9999999;
+    overflow-y: auto;
+  }
+  .delivery-scheduler-modal.active {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+  .scheduler-container {
+    background: white;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 8px;
+    position: relative;
+  }
+  .scheduler-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    z-index: 1;
+  }
+  .scheduler-close:hover {
+    color: #000;
+  }
+  .scheduler {
+    padding: 30px;
+  }
+  .scheduler-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .scheduler-header h2 {
+    color: #333;
+    margin-bottom: 10px;
+  }
+  .calendar-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .nav-btn {
+    background: #46b200;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .nav-btn:hover {
+    background: #3a9200;
+  }
+  .nav-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+  .calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .calendar-weekday {
+    text-align: center;
+    font-weight: 600;
+    color: #666;
+    font-size: 14px;
+    padding: 5px 0;
+  }
+  .calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .calendar-day:hover:not(.disabled) {
+    border-color: #46b200;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  .calendar-day.selected {
+    background: #46b200;
+    color: white;
+    border-color: #46b200;
+  }
+  
+  .calendar-day.disabled {
+    background: #f0f0f0;
+    color: #999;
+    cursor: not-allowed;
+  }
+  
+  .calendar-day .date {
+    font-size: 18px;
+    font-weight: 500;
+  }  
+  .calendar-day.selected .availability {
+    color: white;
+  }
+  
+  .calendar-empty-day {
+    aspect-ratio: 1;
+    /* Ensures empty cells take up space */
+  }
+  
+  .time-slot-selector {
+    margin-top: 30px;
+    display: none;
+  }
+  
+  .time-slot-selector.active {
+    display: block;
+  }
+  
+  .time-slot-selector h3 {
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .time-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+  }
+  
+  .time-option {
+    padding: 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+  }
+  
+  .time-option:hover:not(.disabled) {
+    border-color: #46b200;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .time-option.selected {
+    background: #46b200;
+    color: white;
+    border-color: #46b200;
+  }
+  
+  .time-option.disabled {
+    background: #f0f0f0;
+    color: #999;
+    cursor: not-allowed;
+  }
+  
+  .time-option h4 {
+    margin-bottom: 5px;
+  }
+  
+  .time-option .slots-remaining {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+  
+  .confirm-btn {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 30px auto 0;
+    padding: 15px;
+    background: #46b200;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .confirm-btn:hover {
+    background: #3a9200;
+  }
+  
+  .confirm-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  
+  @media screen and (max-width: 768px) {
+    .scheduler {
+      padding: 20px;
+    }
+    
+    .calendar-grid,
+    .calendar-weekdays {
+      gap: 5px;
+    }
+    
+    .calendar-weekday {
+      font-size: 12px;
+    }
+    
+    .calendar-day .date {
+      font-size: 14px;
+    }
+    
+    .time-options {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="delivery-scheduler-modal" id="deliverySchedulerModal">
+  <div class="scheduler-container">
+    <button class="scheduler-close" onclick="window.DeliveryScheduler.closeScheduler()">&times;</button>
+    
+    <div class="scheduler" id="schedulerContent">
+      <div class="scheduler-header">
+        <h2>Choose Your Delivery Time</h2>
+        <p>Select a convenient date and time for your delivery</p>
+      </div>
+      
+      <div class="calendar-nav">
+        <button class="nav-btn" onclick="window.DeliveryScheduler.previousMonth()" id="prevBtn">Previous</button>
+        <h3 id="currentMonth"></h3>
+        <button class="nav-btn" onclick="window.DeliveryScheduler.nextMonth()" id="nextBtn">Next</button>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+      
+      <div class="time-slot-selector" id="timeSlotSelector">
+        <h3>Select a time slot</h3>
+        <div class="time-options" id="timeOptions"></div>
+      </div>
+      
+      <button class="confirm-btn" id="confirmBtn" disabled onclick="window.DeliveryScheduler.confirmSchedule()">
+        Confirm & Continue to Checkout →
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Enhanced Delivery Scheduler Module with Fixed Calendar and Google Sheets Integration
+(function() {
+  'use strict';
+  
+  // Get shop metafield data if available
+  const shopMetafields = {
+    {% if shop.metafields.delivery_settings.configuration %}
+      deliveryConfig: {{ shop.metafields.delivery_settings.configuration | json }},
+      {% if shop.metafields.delivery_settings.booked_slots %}
+        bookedSlots: {{ shop.metafields.delivery_settings.booked_slots | json }}
+      {% else %}
+        bookedSlots: {}
+      {% endif %}
+    {% else %}
+      deliveryConfig: null,
+      bookedSlots: {}
+    {% endif %}
+  };
+  
+  // Create namespace
+  window.DeliveryScheduler = {
+    // State
+    currentDate: new Date(),
+    selectedDate: null,
+    selectedTimeSlot: null,
+    deliveryCapacity: {},
+    bookedSlots: {},
+    pendingCheckout: false,
+    checkoutCallback: null,
+    configLoaded: false,
+    
+    // Initialize
+    init: function() {
+      console.log('DeliveryScheduler: Initializing...');
+      
+      // Create a fresh date object for current month
+      const now = new Date();
+      this.currentDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      this.currentDate.setHours(0, 0, 0, 0);
+      console.log('Initial currentDate:', this.currentDate.toDateString());
+      
+      // Default configuration
+      const dayKeys = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      dayKeys.forEach(day => {
+        this.deliveryCapacity[day] = {
+          enabled: true,
+          morning: {
+            start: '08:00',
+            end: '12:00',
+            capacity: 20
+          },
+          evening: {
+            start: '16:00',
+            end: '20:00',
+            capacity: 25
+          }
+        };
+      });
+      
+      // Load from localStorage first
+      this.loadFromLocalStorage();
+      
+      // YOUR GOOGLE SCRIPT URL - FIXED SYNTAX
+      const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-nbIlcaJ8-GJfASu0nLddoOwMtz05n2BDOkhYeWtTopUZl6h-wi0P1vEnmJlasCf3dA/exec';
+      
+      // Try to fetch from Google Sheets
+      if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL.includes('script.google.com')) {
+        fetch(GOOGLE_SCRIPT_URL + '?action=config', {
+          method: 'GET',
+          mode: 'cors',
+          redirect: 'follow'
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (data.config) {
+              this.deliveryCapacity = data.config;
+              this.bookedSlots = data.bookedSlots || {};
+              this.configLoaded = true;
+              
+              // Update localStorage with backend data
+              localStorage.setItem('deliveryCapacity', JSON.stringify(this.deliveryCapacity));
+              localStorage.setItem('bookedSlots', JSON.stringify(this.bookedSlots));
+              
+              console.log('DeliveryScheduler: Loaded config from Google Sheets');
+              
+              // Re-render calendar if modal is open
+              const modal = document.getElementById('deliverySchedulerModal');
+              if (modal && modal.classList.contains('active')) {
+                this.renderCalendar();
+              }
+            }
+          })
+          .catch(error => {
+            console.error('Failed to fetch from Google Sheets:', error);
+            // Continue with localStorage data
+          });
+      }
+      
+      // Try to load from metafields if available
+      if (shopMetafields.deliveryConfig && !this.configLoaded) {
+        console.log('DeliveryScheduler: Loading config from metafields');
+        this.deliveryCapacity = shopMetafields.deliveryConfig;
+        this.configLoaded = true;
+      }
+      
+      if (shopMetafields.bookedSlots && Object.keys(shopMetafields.bookedSlots).length > 0) {
+        this.bookedSlots = shopMetafields.bookedSlots;
+      }
+    },
+    
+    // Load from localStorage
+    loadFromLocalStorage: function() {
+      const savedCapacity = localStorage.getItem('deliveryCapacity');
+      if (savedCapacity) {
+        try {
+          this.deliveryCapacity = JSON.parse(savedCapacity);
+          console.log('DeliveryScheduler: Loaded config from localStorage');
+        } catch (e) {
+          console.error('Failed to load delivery capacity from localStorage:', e);
+        }
+      }
+      
+      const savedBookings = localStorage.getItem('bookedSlots');
+      if (savedBookings) {
+        try {
+          this.bookedSlots = JSON.parse(savedBookings);
+          console.log('DeliveryScheduler: Loaded bookings from localStorage');
+        } catch (e) {
+          console.error('Failed to load booked slots from localStorage:', e);
+        }
+      }
+    },
+    
+    // Show scheduler modal
+    showScheduler: function(callback) {
+      console.log('DeliveryScheduler: Showing scheduler modal');
+      
+      // Always reload configuration from localStorage to get latest settings
+      const savedCapacity = localStorage.getItem('deliveryCapacity');
+      if (savedCapacity) {
+        try {
+          this.deliveryCapacity = JSON.parse(savedCapacity);
+          console.log('DeliveryScheduler: Reloaded config from localStorage');
+        } catch (e) {
+          console.error('Failed to reload delivery capacity:', e);
+        }
+      }
+      
+      const modal = document.getElementById('deliverySchedulerModal');
+      if (modal) {
+        this.checkoutCallback = callback || null;
+        this.pendingCheckout = true;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Always render calendar immediately with latest config
+        this.renderCalendar();
+      }
+    },
+    
+    // Close scheduler
+    closeScheduler: function() {
+      console.log('DeliveryScheduler: Closing scheduler modal');
+      const modal = document.getElementById('deliverySchedulerModal');
+      if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        this.pendingCheckout = false;
+        this.checkoutCallback = null;
+      }
+    },
+    
+    // FIXED: Render calendar with correct date positioning
+    renderCalendar: function() {
+      const grid = document.getElementById('calendarGrid');
+      if (!grid) {
+        console.error('Calendar grid element not found!');
+        return;
+      }
+      
+      grid.innerHTML = '';
+      
+      // Get year and month from currentDate
+      const year = this.currentDate.getFullYear();
+      const month = this.currentDate.getMonth();
+      
+      // CRITICAL: Create date object properly for the 1st of the month
+      const localFirstDay = new Date(year, month, 1);
+      
+      // Get the day of week (0 = Sunday, 1 = Monday, etc.)
+      const firstDayWeekday = localFirstDay.getDay();
+      
+      // Get number of days in the month
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      
+      // Update month display
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const monthDisplay = document.getElementById('currentMonth');
+      if (monthDisplay) {
+        monthDisplay.textContent = `${monthNames[month]} ${year}`;
+      }
+      
+      // Disable previous button if current month
+      const today = new Date();
+      const prevBtn = document.getElementById('prevBtn');
+      if (prevBtn) {
+        prevBtn.disabled = 
+          this.currentDate.getMonth() === today.getMonth() && 
+          this.currentDate.getFullYear() === today.getFullYear();
+      }
+      
+      // CRITICAL FIX: Calculate empty cells for Monday-first calendar
+      // JavaScript days: 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday
+      // Grid positions:  6,        0,        1,         2,          3,         4,        5
+      
+      let emptyDays;
+      switch(firstDayWeekday) {
+        case 0: emptyDays = 6; break; // Sunday -> position 6
+        case 1: emptyDays = 0; break; // Monday -> position 0 
+        case 2: emptyDays = 1; break; // Tuesday -> position 1
+        case 3: emptyDays = 2; break; // Wednesday -> position 2
+        case 4: emptyDays = 3; break; // Thursday -> position 3
+        case 5: emptyDays = 4; break; // Friday -> position 4
+        case 6: emptyDays = 5; break; // Saturday -> position 5
+        default: emptyDays = 0; // Fallback
+      }
+      
+      // Detailed logging for debugging
+      console.log(`=== Rendering ${monthNames[month]} ${year} ===`);
+      console.log(`First day of month: ${localFirstDay.toDateString()}`);
+      console.log(`First day weekday: ${firstDayWeekday} (${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][firstDayWeekday]})`);
+      console.log(`Empty cells before first day: ${emptyDays}`);
+      console.log(`Days in month: ${daysInMonth}`);
+      
+      // Add empty cells BEFORE the first day
+      for (let i = 0; i < emptyDays; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day calendar-empty-day';
+        emptyDay.style.visibility = 'hidden'; // Hide but maintain grid position
+        grid.appendChild(emptyDay);
+      }
+      
+      // Add all days of the month
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dayElement = this.createDayElement(date);
+        grid.appendChild(dayElement);
+      }
+      
+      // Fill remaining cells if needed (optional, for visual consistency)
+      const totalCells = emptyDays + daysInMonth;
+      const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+      
+      for (let i = 0; i < remainingCells; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day calendar-empty-day';
+        emptyDay.style.visibility = 'hidden';
+        grid.appendChild(emptyDay);
+      }
+      
+      console.log(`Total grid cells: ${grid.children.length} (should be multiple of 7)`);
+    },
+    
+    // Create calendar day element
+// Create calendar day element
+createDayElement: function(date) {
+  const dayElement = document.createElement('div');
+  dayElement.className = 'calendar-day';
+  
+  // Create new date objects to avoid mutation
+  const today = new Date();
+  const checkDate = new Date(date);
+  
+  // Set both to start of day for accurate comparison
+  today.setHours(0, 0, 0, 0);
+  checkDate.setHours(0, 0, 0, 0);
+  
+  // Format date as YYYY-MM-DD
+  const dateStr = this.formatDate(date);
+  
+  // Get configuration for this specific date
+  const dateConfig = this.deliveryCapacity[dateStr];
+  
+  // Add date number first
+  const dateNumber = document.createElement('div');
+  dateNumber.className = 'date';
+  dateNumber.textContent = date.getDate();
+  dayElement.appendChild(dateNumber);
+  
+  // Check if date is in the past
+  if (checkDate < today) {
+    dayElement.classList.add('disabled');
+  } else if (!dateConfig || !dateConfig.enabled) {
+    // No config for this date or disabled
+    dayElement.classList.add('disabled');
+  } else {
+    // Check availability
+    const morningBooked = this.bookedSlots[`${dateStr}-morning`] || 0;
+    const eveningBooked = this.bookedSlots[`${dateStr}-evening`] || 0;
+    const morningAvail = dateConfig.morning.capacity - morningBooked;
+    const eveningAvail = dateConfig.evening.capacity - eveningBooked;
+    const totalAvail = morningAvail + eveningAvail;
+    
+    if (totalAvail > 0) {
+      dayElement.onclick = () => this.selectDate(date);
+    } else {
+      dayElement.classList.add('disabled');
+    }
+  }
+  
+  // Check if this is the selected date
+  if (this.selectedDate && this.selectedDate.toDateString() === date.toDateString()) {
+    dayElement.classList.add('selected');
+  }
+  
+  return dayElement;
+},
+    
+    // Select date
+    selectDate: function(date) {
+      this.selectedDate = date;
+      this.selectedTimeSlot = null;
+      this.renderCalendar();
+      this.showTimeSlots(date);
+      this.updateConfirmButton();
+    },
+    
+    // Show time slots
+// Show time slots
+    showTimeSlots: function(date) {
+      const dateStr = this.formatDate(date);
+      const dateConfig = this.deliveryCapacity[dateStr];
+      
+      if (!dateConfig) {
+        console.error('No configuration for date:', dateStr);
+        return;
+      }
+      
+      const timeSlotSelector = document.getElementById('timeSlotSelector');
+      const timeOptions = document.getElementById('timeOptions');
+      
+      timeSlotSelector.classList.add('active');
+      timeOptions.innerHTML = '';
+      
+      // Morning slot
+      const morningBooked = this.bookedSlots[`${dateStr}-morning`] || 0;
+      const morningAvail = dateConfig.morning.capacity - morningBooked;
+      
+      const morningOption = document.createElement('div');
+      morningOption.className = 'time-option';
+      if (morningAvail <= 0) morningOption.classList.add('disabled');
+      morningOption.innerHTML = `
+        <h4>Morning Delivery</h4>
+        <div>${this.formatTime(dateConfig.morning.start)} - ${this.formatTime(dateConfig.morning.end)}</div>
+        <div class="slots-remaining">${morningAvail} slots available</div>
+      `;
+      if (morningAvail > 0) {
+        morningOption.onclick = () => this.selectTimeSlot('morning');
+      }
+      if (this.selectedTimeSlot === 'morning') {
+        morningOption.classList.add('selected');
+      }
+      timeOptions.appendChild(morningOption);
+      
+      // Evening slot
+      const eveningBooked = this.bookedSlots[`${dateStr}-evening`] || 0;
+      const eveningAvail = dateConfig.evening.capacity - eveningBooked;
+      
+      const eveningOption = document.createElement('div');
+      eveningOption.className = 'time-option';
+      if (eveningAvail <= 0) eveningOption.classList.add('disabled');
+      eveningOption.innerHTML = `
+        <h4>Evening Delivery</h4>
+        <div>${this.formatTime(dateConfig.evening.start)} - ${this.formatTime(dateConfig.evening.end)}</div>
+        <div class="slots-remaining">${eveningAvail} slots available</div>
+      `;
+      if (eveningAvail > 0) {
+        eveningOption.onclick = () => this.selectTimeSlot('evening');
+      }
+      if (this.selectedTimeSlot === 'evening') {
+        eveningOption.classList.add('selected');
+      }
+      timeOptions.appendChild(eveningOption);
+    },
+    
+    // Select time slot
+    selectTimeSlot: function(slot) {
+      this.selectedTimeSlot = slot;
+      this.showTimeSlots(this.selectedDate);
+      this.updateConfirmButton();
+    },
+    
+    // Update confirm button
+    updateConfirmButton: function() {
+      const btn = document.getElementById('confirmBtn');
+      btn.disabled = !this.selectedDate || !this.selectedTimeSlot;
+    },
+    
+    // Confirm schedule
+// Replace the existing confirmSchedule function with this fixed version:
+  confirmSchedule: function() {
+    console.log('DeliveryScheduler: confirmSchedule called');
+    
+    if (!this.selectedDate || !this.selectedTimeSlot) {
+      console.error('DeliveryScheduler: No date or time slot selected');
+      return;
+    }
+    
+    const dateStr = this.formatDate(this.selectedDate);
+    const slotKey = `${dateStr}-${this.selectedTimeSlot}`;
+    
+    // Update booked slots
+    this.bookedSlots[slotKey] = (this.bookedSlots[slotKey] || 0) + 1;
+    
+    // Save to localStorage (temporary)
+    localStorage.setItem('bookedSlots', JSON.stringify(this.bookedSlots));
+    
+    // Get time details - Fixed to use dateStr instead of dayName
+    const dateConfig = this.deliveryCapacity[dateStr];
+    if (!dateConfig) {
+      console.error('No config found for date:', dateStr);
+      alert('Error: Invalid date configuration. Please try again.');
+      return;
+    }
+    
+    const timeConfig = dateConfig[this.selectedTimeSlot];
+    
+    // Prepare delivery info
+    const deliveryInfo = {
+      date: dateStr,
+      slot: this.selectedTimeSlot,
+      slot_display: this.selectedTimeSlot === 'morning' ? 'Morning' : 'Evening',
+      time_range: `${this.formatTime(timeConfig.start)} - ${this.formatTime(timeConfig.end)}`,
+      start_time: timeConfig.start,
+      end_time: timeConfig.end,
+      timestamp: new Date().toISOString()
+    };
+    
+    console.log('DeliveryScheduler: Updating cart with delivery info', deliveryInfo);
+    
+    // Store the callback reference before any async operations
+    const checkoutCallback = this.checkoutCallback;
+    const hasCallback = !!checkoutCallback;
+    
+    // Disable the confirm button to prevent double-clicks
+    const confirmBtn = document.getElementById('confirmBtn');
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Processing...';
+    }
+    
+    // Update cart attributes with structured data
+    fetch('/cart/update.js', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        attributes: {
+          'delivery_date': deliveryInfo.date,
+          'delivery_slot': deliveryInfo.slot,
+          'delivery_slot_display': deliveryInfo.slot_display,
+          'delivery_time_range': deliveryInfo.time_range,
+          'delivery_start_time': deliveryInfo.start_time,
+          'delivery_end_time': deliveryInfo.end_time,
+          'delivery_scheduled_at': deliveryInfo.timestamp,
+          // Legacy attributes for backward compatibility
+          'Delivery Date': deliveryInfo.date,
+          'Delivery Slot': deliveryInfo.slot_display,
+          'Delivery Time': deliveryInfo.time_range
+        }
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('DeliveryScheduler: Cart updated successfully', data);
+      
+      // Update backend with booking (fire and forget)
+      this.updateBackendBooking(slotKey);
+      
+      // Close modal first
+      this.closeScheduler();
+      
+      // Small delay to ensure modal closes smoothly
+      setTimeout(() => {
+        // Proceed to checkout
+        if (hasCallback && checkoutCallback) {
+          console.log('DeliveryScheduler: Executing checkout callback');
+          try {
+            checkoutCallback();
+          } catch (e) {
+            console.error('Callback error:', e);
+            // Fallback to direct redirect
+            window.location.href = '/checkout';
+          }
+        } else {
+          console.log('DeliveryScheduler: No callback, redirecting to checkout');
+          window.location.href = '/checkout';
+        }
+      }, 100);
+    })
+    .catch(error => {
+      console.error('DeliveryScheduler: Error updating cart', error);
+      
+      // Re-enable button on error
+      if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Confirm & Continue to Checkout →';
+      }
+      
+      alert('Error saving delivery preferences. Please try again.');
+    });
+  },
+    
+    // Update backend with new booking
+    updateBackendBooking: function(slotKey) {
+      console.log('DeliveryScheduler: Updating backend for slot:', slotKey);
+      
+      const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-nbIlcaJ8-GJfASu0nLddoOwMtz05n2BDOkhYeWtTopUZl6h-wi0P1vEnmJlasCf3dA/exec';
+      
+      if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL.includes('script.google.com')) {
+        fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          redirect: 'follow',
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+          body: JSON.stringify({
+            action: 'bookSlot',
+            slot: slotKey,
+            count: this.bookedSlots[slotKey] || 1
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.bookedSlots) {
+            // Update local state with backend response
+            this.bookedSlots = data.bookedSlots;
+            localStorage.setItem('bookedSlots', JSON.stringify(this.bookedSlots));
+            console.log('DeliveryScheduler: Backend updated successfully');
+          }
+        })
+        .catch(error => {
+          console.error('Failed to update backend booking:', error);
+          // Continue anyway - booking is saved locally
+        });
+      }
+    },
+    
+    // Navigation
+    previousMonth: function() {
+      // Get current year and month
+      let year = this.currentDate.getFullYear();
+      let month = this.currentDate.getMonth();
+      
+      // Go to previous month
+      month--;
+      if (month < 0) {
+        month = 11;
+        year--;
+      }
+      
+      // Create new date for the 1st of previous month
+      this.currentDate = new Date(year, month, 1);
+      console.log('Navigate to previous month:', this.currentDate.toDateString());
+      this.renderCalendar();
+    },
+    
+    nextMonth: function() {
+      // Get current year and month
+      let year = this.currentDate.getFullYear();
+      let month = this.currentDate.getMonth();
+      
+      // Go to next month
+      month++;
+      if (month > 11) {
+        month = 0;
+        year++;
+      }
+      
+      // Create new date for the 1st of next month
+      this.currentDate = new Date(year, month, 1);
+      console.log('Navigate to next month:', this.currentDate.toDateString());
+      this.renderCalendar();
+    },
+    
+    // Utilities
+    formatDate: function(date) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    },
+    
+    formatTime: function(time) {
+      const [hours, minutes] = time.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    }
+  };
+  
+  // Initialize on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      window.DeliveryScheduler.init();
+    });
+  } else {
+    window.DeliveryScheduler.init();
+  }
+})();
+
+// Update cart drawer integration
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Cart Drawer Integration: Starting...');
+  
+  // Override the cart drawer checkout button
+  function updateCartDrawerCheckout() {
+    const checkoutBtn = document.getElementById('CartDrawer-Checkout');
+    if (checkoutBtn) {
+      console.log('Cart Drawer Integration: Found checkout button, updating...');
+      checkoutBtn.type = 'button';
+      checkoutBtn.onclick = function(e) {
+        e.preventDefault();
+        console.log('Cart Drawer: Checkout clicked, showing scheduler');
+        
+        // Show scheduler with callback
+        window.DeliveryScheduler.showScheduler(function() {
+          console.log('Cart Drawer: Scheduler confirmed, proceeding to checkout');
+          window.location.href = '/checkout';
+        });
+        
+        return false;
+      };
+    } else {
+      console.log('Cart Drawer Integration: Checkout button not found');
+    }
+  }
+  
+  // Initial update
+  updateCartDrawerCheckout();
+  
+  // Watch for cart drawer updates
+  const observer = new MutationObserver(function(mutations) {
+    updateCartDrawerCheckout();
+  });
+  
+  const cartDrawer = document.getElementById('CartDrawer');
+  if (cartDrawer) {
+    observer.observe(cartDrawer, {
+      childList: true,
+      subtree: true
+    });
+  }
+  
+  // Also update after cart events
+  document.addEventListener('cart:updated', updateCartDrawerCheckout);
+  document.addEventListener('cart-drawer:open', function() {
+    setTimeout(updateCartDrawerCheckout, 100);
+  });
+});
+</script>

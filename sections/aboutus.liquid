@@ -1,0 +1,720 @@
+{{ 'section-aboutus.css' | asset_url | stylesheet_tag }}
+<div class="{{ section.settings.section_width }}">
+<div class="main-aboutus-section section-{{ section.id }}-padding {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+   <div class="{% if section.settings.section_width == 'padding_width' or section.settings.section_width == 'full_width' and section.settings.about_style == 'classic' %}page-width{% endif %}">
+       <div class="main-about-us-section-wrapper {{ section.settings.image_position }} {{ section.settings.about_style }}">
+        <div class="main-about-us-left-side-part">
+          <div class="about-inner1">
+            <div class="about-small-image">
+                <div class="small-image-inner-well">
+                  {% if section.settings.about-us-smallimg != blank %}
+                  <div class="media media--transparent ratio" style="--ratio-percent: 108%">
+                    {{ section.settings.about-us-smallimg | image_url: width: 1920 | image_tag : loading: 'lazy', class: 'w-100' }}
+                  </div>
+                  {% else %}
+                  <div class="media media--transparent ratio" style="--ratio-percent: 108%">
+                    {{ 'collection-5' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                  </div>
+                  {% endif %}
+                </div>
+            </div>
+            <div class="about-small-image-inner">
+                <div class="small-image-inner-well">
+                  {% if section.settings.about-us-smallimg-inner != blank %}
+                  <div class="media media--transparent ratio" style="--ratio-percent: 108%">
+                    {{ section.settings.about-us-smallimg-inner | image_url: width: 1920 | image_tag : loading: 'lazy', class: 'w-100' }}
+                  </div>
+                  {% else %}
+                  <div class="media media--transparent ratio" style="--ratio-percent: 108%">
+                    {{ 'collection-5' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                  </div>
+                  {% endif %}
+                </div>
+            </div>
+          </div>
+          <div class="main-master-magnifly">
+            {%- if section.settings.banner_type == 'image' -%}
+              <div>
+                {% if section.settings.about-us-img != blank %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 154%">
+                  {{ section.settings.about-us-img | image_url: width: 1920 | image_tag : loading: 'lazy', class: 'w-100' }}
+                </div>
+                {% else %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 154%">
+                  {{ 'collection-6' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                </div>
+                {% endif %}
+              </div>
+            {%- endif -%}
+
+            {%- if section.settings.banner_type == 'video' -%}
+            {% if section.settings.local_url != blank %}
+            <div class="media media--transparent ratio" style="--ratio-percent: 154%">
+              <video id="Mp4Video-{{ section.id }}" class="about_video" data-type="mp4"
+                src="{{ section.settings.local_url }}" loop muted playsinline autoplay></video>
+            </div>
+            {% else %}
+            <div class="media media--transparent ratio" style="--ratio-percent: 154%">
+              {{ 'collection-5' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+            </div>
+            {% endif %}
+            {%- endif -%}
+
+            {%- if section.settings.banner_type == 'online-video' -%}
+            {% if section.settings.video_url != blank %}
+            <div class="media media--transparent ratio" style="--ratio-percent: 154%">
+              {%- if section.settings.video_url.type == 'youtube' -%}
+              <iframe src="https://www.youtube.com/embed/{{ section.settings.video_url.id }}?enablejsapi=1"
+                class="js-youtube" allow="autoplay; encrypted-media" allowfullscreen
+                title="{{ section.settings.description | escape }}"></iframe>
+              {%- else -%}
+              <iframe src="https://player.vimeo.com/video/{{ section.settings.video_url.id }}" class="js-vimeo"
+                allow="autoplay; encrypted-media" allowfullscreen
+                title="{{ section.settings.description | escape }}"></iframe>
+              {%- endif -%}
+            </div>
+            {% else %}
+            <div class="media media--transparent ratio" style="--ratio-percent: 154%">
+              {{ 'collection-4' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+            </div>
+            {% endif %}
+            {%- endif -%}
+            
+          
+            <div class="small-image-inner-bottom-img">
+                {% if section.settings.about-us-bottom != blank %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 46%">
+                  {{ section.settings.about-us-bottom | image_url: width: 1920 | image_tag : loading: 'lazy', class: 'w-100' }}
+                </div>
+                {% else %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 46%">
+                  {{ 'collection-5' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          
+        </div>
+        <div class="main-about-us-right-side-part main-about-us-right-side-part--{{ section.settings.text_alignment }}">
+        <div class="about-text-sec">
+
+          {% if section.settings.heading-img != blank or section.settings.main_subheading != blank or section.settings.main_heading != blank %}
+            <div class="about_title_wrap">
+              {% if section.settings.heading-img != blank %}
+                <div class="heading-img w-100 {{ section.settings.text_alignment }}">
+                  <img src="{{ section.settings.heading-img | img_url: 'master' }}" alt="slider-img" class="w-100" loading="eager">
+                </div>
+              {% endif %}
+               {% if section.settings.main_subheading != blank %}
+                <span class="theme_main_subheading">{{ section.settings.main_subheading }}</span>
+               {% endif %}
+               {% if section.settings.main_heading != blank %}
+                <div class="theme_main_heading h2">{{ section.settings.main_heading }}</div>
+               {% endif %}
+            </div>
+          {% endif %}
+          <div class="about-content-block">
+          {% for block in section.blocks %}
+          {% if block.type == 'about-content' %}
+          <div class="about-content-text">
+            <div class="about-content-number {% if section.settings.number_shape == "square" %}about_number_square{% endif %}">
+              {% if block.settings.content_img != blank %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ block.settings.content_img | image_url: width: 1920 | image_tag : loading: 'lazy', class: 'w-100' }}
+                </div>
+                {% else %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ 'collection-5' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                </div>
+              {% endif %}
+            </div>
+            <div class="about-content-heading">
+              <div class="h4">{{ block.settings.content_heading }}</div>
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+          </div>
+          {% if section.settings.about-main-paragraph != blank %}
+            <div class="theme_main_description">{{ section.settings.about-main-paragraph }}</div>
+          {% endif %}
+          <div class="about_button about_btn--{{ section.settings.text_alignment }}">
+            <a {% if section.settings.about-btn-url %} href="{{ section.settings.about-btn-url }}" {% else %} role="link"
+            aria-disabled="true" {% endif %} class="button theme_buttons">{{ section.settings.about-btn-text }}</a>
+          </div>
+        </div>
+        </div>
+       </div>
+   </div>
+</div>
+</div>
+
+{% style %}
+  .main-aboutus-section .main-about-us-right-side-part .heading-img.center{
+    margin: 0 auto;
+  }
+  .main-aboutus-section .main-about-us-right-side-part .heading-img.right{
+    margin: 0 0 0 auto;
+  }
+  .main-about-us-right-side-part .theme_main_subheading {
+    color: {{ section.settings.theme_subheading_color }};
+  }
+  .main-about-us-right-side-part .theme_main_heading {
+    color: {{ section.settings.theme_heading_color }};
+  }
+  .main-about-us-right-side-part .theme_main_description{
+    color: {{ section.settings.content_color }};
+    border-top: 1px solid {{ settings.border_color }};
+  }
+  .main-about-us-right-side-part .theme_buttons {
+    background-color: {{ section.settings.theme_btn_bg }};
+    color:{{ section.settings.theme_btn_text }};
+  }
+  .main-about-us-right-side-part .theme_buttons:hover {
+    background-color: {{ section.settings.theme_btn_hr_bg }};
+    color:{{ section.settings.theme_btn_hr_text }}; 
+  }
+  .about-content-text .about-content-heading .h4{
+    color: {{ section.settings.content-text }};
+  }
+  .about-content-text .about-content-number {
+    background-color: {{ section.settings.content-bg }};
+  }
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding-top }}px;
+    padding-bottom: {{ section.settings.padding-bottom }}px;
+    margin-top: {{ section.settings.margin-top }}px;
+    margin-bottom: {{ section.settings.margin-bottom }}px;
+    background-color: {{ section.settings.section_bg }};
+  }
+  @media screen and (max-width: 1429px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-1429 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-1429 }}px;
+      margin-top: {{ section.settings.margin-top-1429 }}px;
+      margin-bottom: {{ section.settings.margin-bottom-1429 }}px;
+    }
+  }
+  @media screen and (max-width: 1199px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-1199 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-1199 }}px;
+      margin-top: {{ section.settings.margin-top-1199 }}px;
+      margin-bottom: {{ section.settings.margin-bottom-1199 }}px;
+    }
+  }
+  @media screen and (max-width: 991px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-991 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-991 }}px;
+      margin-top: {{ section.settings.margin-top-991 }}px;
+      margin-bottom: {{ section.settings.margin-bottom-991 }}px;
+    }
+  }
+  @media screen and (max-width: 767px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-767 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-767 }}px;
+      margin-top: {{ section.settings.margin-top-767 }}px;
+      margin-bottom: {{ section.settings.margin-bottom-767 }}px;  
+    }
+  }
+  @media screen and (max-width: 575px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-575 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-575 }}px;
+      margin-top: {{ section.settings.margin-top-575 }}px;
+      margin-bottom: {{ section.settings.margin-bottom-575 }}px;  
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+  {
+    "name": "Aboutus section",
+    "tag": "section",
+    "class": "section aboutus_section",
+    "settings": [
+      {
+        "type": "select",
+        "id": "section_width",
+        "options": [
+          {
+            "value": "full_width",
+            "label": "Full width"
+          },
+          {
+            "value": "padding_width",
+            "label": "With padding"
+          }
+        ],
+        "label": "Section width",
+        "default": "full_width"
+      },
+      {
+        "type": "select",
+        "id": "about_style",
+        "options": [
+          {
+            "value": "classic",
+            "label": "Classic"
+          },
+          {
+            "value": "modern",
+            "label": "Modern"
+          }
+        ],
+        "default": "classic",
+        "label": "About us style"
+      },
+      {
+        "type": "select",
+        "id": "image_position",
+        "options": [
+          {
+            "value": "left_img",
+            "label": "Left image"
+          },
+          {
+            "value": "right_img",
+            "label": "Right image"
+          }
+        ],
+        "default": "right_img",
+        "label": "Image position"
+      },
+      {
+        "type": "select",
+        "id": "banner_type",
+        "options": [
+          {
+            "value": "image",
+            "label": "Image"
+          },
+          {
+            "value": "video",
+            "label": "Local video"
+          },
+          {
+            "value": "online-video",
+            "label": "Online video"
+          }
+        ],
+        "default": "image",
+        "label": "Image settings"
+      },
+      {
+        "type": "url",
+        "id": "local_url",
+        "label": "Local link",
+        "info": "Local video CDN link here."
+      },
+      {
+        "type": "video_url",
+        "id": "video_url",
+        "accept": [
+          "youtube",
+          "vimeo"
+        ],
+        "label": "Online link",
+        "info": "Youtube or Vimeo link here",
+        "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc"
+      },
+      {
+        "type": "header",
+        "content": "Image settings"
+      },
+      {
+        "type": "image_picker",
+        "id": "about-us-smallimg",
+        "label": "First img"      
+      },
+      {
+        "type": "image_picker",
+        "id": "about-us-smallimg-inner",
+        "label": "First bottom img"
+      },
+      {
+        "type": "image_picker",
+        "id": "about-us-img",
+        "label": "Second image",
+        "info": "When select 'modern style' select this image"
+      },
+      {
+        "type": "image_picker",
+        "id": "about-us-bottom",
+        "label": "Bottom img"
+      },
+      {
+        "type": "header",
+        "content": "Text Settings"
+      },
+      {
+        "type" : "image_picker",
+        "id" : "heading-img",
+        "label" : "Heading image"
+      },
+      {
+        "type": "text",
+        "id": "main_subheading",
+        "label": "Subheading",
+        "default": "About your brand"
+      },
+      {
+        "type": "textarea",
+        "id": "main_heading",
+        "label": "Heading",
+        "default": "About us"
+      },
+      {
+        "type": "textarea",
+        "id": "about-main-paragraph",
+        "label": "Content",
+        "default": "Pair text with an image to focus on your brand and description of your brand."
+      },
+      {
+        "type": "text",
+        "id": "about-btn-text",
+        "label": "Button",
+        "default": "Shop now"
+      },
+      {
+        "type": "url",
+        "id": "about-btn-url",
+        "label": "Button link"
+      },
+      {
+        "type": "select",
+        "id": "text_alignment",
+        "label": "Content text alignment",
+        "options": [
+          {
+            "value": "left",
+            "label": "Left"
+          },
+          {
+            "value": "center",
+            "label": "Center"
+          },
+          {
+            "value": "right",
+            "label": "Right"
+          }
+        ],
+        "default": "left"
+      },
+      {
+        "type": "header",
+        "content": "Color settings"
+      },
+      {
+        "type": "color",
+        "id": "section_bg",
+        "label": "Section background color"
+      },
+      {
+        "type": "color",
+        "id": "theme_subheading_color",
+        "label": "Subheading color",
+        "default": "#519b4d"
+      },
+      {
+        "type": "color",
+        "id": "theme_heading_color",
+        "label": "Heading color",
+        "default": "#333333"
+      },
+      {
+        "type": "color",
+        "id": "content-bg",
+        "label": "Image bg color",
+        "default": "#e5e5e5"
+      },
+      {
+        "type": "color",
+        "id": "content-text",
+        "label": "Content text color",
+        "default": "#333333"
+      },
+      {
+        "type": "color",
+        "id": "content_color",
+        "label": "Description color",
+        "default": "#666666"
+      },
+      {
+        "type": "color",
+        "id": "theme_btn_bg",
+        "label": "Button bg color",
+        "default": "#333333"
+      },
+      {
+        "type": "color",
+        "id": "theme_btn_text",
+        "label": "Button text color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "theme_btn_hr_bg",
+        "label": "Button hover bg color",
+        "default": "#111111"
+      },
+      {
+        "type": "color",
+        "id": "theme_btn_hr_text",
+        "label": "Button hover text color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "select",
+        "id": "number_shape",
+        "options": [
+          {
+            "value": "round",
+            "label": "Round"
+          },
+          {
+            "value": "square",
+            "label": "Square"
+          }
+        ],
+        "default": "round",
+        "label": "service bg shape"
+      },
+      {
+        "type": "header",
+        "content": "t:sections.all.padding.section_padding_heading"
+      },
+      {
+        "type": "number",
+        "id": "padding-top",
+        "label": "t:sections.all.padding.padding_top",
+        "default": 120
+      },
+      {
+        "type": "number",
+        "id": "padding-bottom",
+        "label": "t:sections.all.padding.padding_bottom",
+        "default": 120
+      },
+      {
+        "type": "header",
+        "content": "Screen wise section padding"
+      },
+      {
+        "type": "header",
+        "content": "@media screen 1429"
+      },
+      {
+        "type": "number",
+        "id": "padding-top-1429",
+        "label": "Padding top",
+        "default": 70
+      },
+      {
+        "type": "number",
+        "id": "padding-bottom-1429",
+        "label": "Padding bottom",
+        "default": 70
+      },
+      {
+        "type": "header",
+        "content": "@media screen 1199"
+      },
+      {
+        "type": "number",
+        "id": "padding-top-1199",
+        "label": "Padding top",
+        "default": 60
+      },
+      {
+        "type": "number",
+        "id": "padding-bottom-1199",
+        "label": "Padding bottom",
+        "default": 60
+      },
+      {
+        "type": "header",
+        "content": "@media screen 991"
+      },
+      {
+        "type": "number",
+        "id": "padding-top-991",
+        "label": "Padding top",
+        "default": 50
+      },
+      {
+        "type": "number",
+        "id": "padding-bottom-991",
+        "label": "Padding bottom",
+        "default": 50
+      },
+      {
+        "type": "header",
+        "content": "@media screen 767"
+      },
+      {
+        "type": "number",
+        "id": "padding-top-767",
+        "label": "Padding top",
+        "default": 40
+      },
+      {
+        "type": "number",
+        "id": "padding-bottom-767",
+        "label": "Padding bottom",
+        "default": 40
+      },
+      {
+        "type": "header",
+        "content": "@media screen 575"
+      },
+      {
+        "type": "number",
+        "id": "padding-top-575",
+        "label": "Padding top",
+        "default": 30
+      },
+      {
+        "type": "number",
+        "id": "padding-bottom-575",
+        "label": "Padding bottom",
+        "default": 30
+      },
+      {
+        "type": "header",
+        "content": "Margin settings"
+      },
+      {
+        "type": "number",
+        "id": "margin-top",
+        "label": "Margin top",
+        "default": 0
+      },
+      {
+        "type": "number",
+        "id": "margin-bottom",
+        "label": "Margin bottom",
+        "default": 0
+      },
+      {
+        "type": "header",
+        "content": "Screen wise section margin"
+      },
+      {
+        "type": "header",
+        "content": "@media screen 1429"
+      },
+      {
+        "type": "number",
+        "id": "margin-top-1429",
+        "label": "Margin top",
+        "default": 0
+      },
+      {
+        "type": "number",
+        "id": "margin-bottom-1429",
+        "label": "Margin bottom",
+        "default": 0
+      },
+      {
+        "type": "header",
+        "content": "@media screen 1199"
+      },
+      {
+        "type": "number",
+        "id": "margin-top-1199",
+        "label": "Margin top",
+        "default": 0
+      },
+      {
+        "type": "number",
+        "id": "margin-bottom-1199",
+        "label": "Margin bottom",
+        "default": 0
+      },
+      {
+        "type": "header",
+        "content": "@media screen 991"
+      },
+      {
+        "type": "number",
+        "id": "margin-top-991",
+        "label": "Margin top",
+        "default": 0
+      },
+      {
+        "type": "number",
+        "id": "margin-bottom-991",
+        "label": "Margin bottom",
+        "default": 0
+      },
+      {
+        "type": "header",
+        "content": "@media screen 767"
+      },
+      {
+        "type": "number",
+        "id": "margin-top-767",
+        "label": "Margin top",
+        "default": 0
+      },
+      {
+        "type": "number",
+        "id": "margin-bottom-767",
+        "label": "Margin bottom",
+        "default": 0
+      },
+      {
+        "type": "header",
+        "content": "@media screen 575"
+      },
+      {
+        "type": "number",
+        "id": "margin-top-575",
+        "label": "Margin top",
+        "default": 0
+      },
+      {
+        "type": "number",
+        "id": "margin-bottom-575",
+        "label": "Margin bottom",
+        "default": 0
+      }
+    ],
+    "blocks": [
+        {
+          "type": "about-content",
+          "name": "About content",
+          "limit": 4,
+          "settings": [
+            {
+              "type": "image_picker",
+              "id": "content_img",
+              "label": "Image"
+            },
+            {
+              "type": "textarea",
+              "id": "content_heading",
+              "label": "Heading",
+              "default": "Content heading"
+            }
+          ]
+        }
+      ],
+     "presets": [
+      {
+        "name": "Aboutus section",
+        "blocks": [
+          {
+            "type": "about-content"
+          },
+          {
+            "type": "about-content"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

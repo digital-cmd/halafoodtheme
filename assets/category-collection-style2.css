@@ -1,0 +1,88 @@
+.category-collection-style2 .main-collections-list-wrapper .swiper-button-next,
+.category-collection-style2 .main-collections-list-wrapper .swiper-button-prev{
+  opacity: 0;
+}
+.category-collection-style2 .main-collections-list-wrapper:hover .swiper-button-next,
+.category-collection-style2 .main-collections-list-wrapper:hover .swiper-button-prev{
+  opacity: 1;
+}
+.main-collection-list-item-2 .collection-category-image .media{
+  border-radius: var(--media-radius);
+}
+.main-collection-list-item-2 .collection_content svg{
+  margin-right: 5px;
+}
+.main-collection-list-item-2 .collection-category-image:hover img{
+  transform: scale(1.1);
+}
+.main-collection-list-item-2 .collection-category-image img{
+  transition: all 0.5s ease-in-out;
+}
+.main-collection-list-item-2 .theme_buttons,
+.main-collection-list-item-2 .collection-name-wrapper{
+  margin-top: 10px;
+  text-align: left;
+}
+.main-collection-list-item-2 .main-collection-list-wrapper .collection-list {
+  margin: 0px -15px;
+  overflow: hidden;
+}
+.main-collection-list-item-2 .main-collection-list-wrapper .collection-list.swiper-wrapper {
+  margin: 0px;
+  overflow: initial;
+}
+.main-collection-list-item-2 .main-collection-list-wrapper .swiper-wrapper .main-collection-list-2 {
+  padding: 0px;
+}
+.main-collection-list-item-2 .collection-card__image {
+  position: relative;
+  transition: all .5s ease;
+}
+.main-collection-list-item-2 .collection_heading {
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+.main-collection-list-item-2 .text_coll ul li{
+  margin-bottom: 8px;
+}
+.main-collection-list-item-2 .collection_content{
+  font-size: 14px;
+  font-style: italic;
+}
+.category-collection-style2 .main-collection-item--left {
+  text-align: left;
+}
+.category-collection-style2 .main-collection-item--center {
+  text-align: center;
+}
+.category-collection-style2 .main-collection-item--right {
+  text-align: right;
+}
+.category-collection-style2 .collection-name-wrapper .theme_buttons{
+  padding: 0px 0px;
+}
+@media screen and (max-width: 1099px) {
+   .main-collection-list-item-2 .collection_heading {
+    margin-bottom: 7px;
+    font-size: 18px;
+  }
+}
+@media screen and (max-width: 991px) {
+  .main-collection-list-item-2 .main-collection-list-wrapper .collection-list {
+    margin: 0 -15px;
+    overflow-y: hidden;
+    overflow-x: scroll;
+    display: flex;
+  }
+}
+@media screen and (max-width: 767px) {
+  .main-collection-list-item-2 .collection_heading {
+    margin-bottom: 5px;
+    font-size: 16px;
+  }
+}
+@media screen and (max-width: 575px) {
+  .main-collection-list-item-2 .text_coll ul li {
+    margin-bottom: 8px;
+  }
+}

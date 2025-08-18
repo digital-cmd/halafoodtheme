@@ -1,0 +1,94 @@
+/* ============================ terms page start ============================ */
+.terms_title:first-child {
+  margin-top: 0px;
+}
+.terms_image_wrapper{
+  padding-bottom: 40px;
+}
+.terms_title {
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-radius: var(--buttons-radius);
+  text-transform: var(--text_style);
+}
+.terms_title .icon-wings{
+  margin-right: 10px;
+}
+.terms_paragraph {
+  padding: 15px;
+}
+/* ============================ terms page end ============================ */
+/* ============================ privacy/shipping page start ============================ */
+.privacy_policy_title, .shipping_policy_title, .return_title {
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  text-transform: var(--text_style);
+   border-radius: var(--buttons-radius);
+}
+.policy-content,
+.return-content,
+.shipping-content,
+.terms-content{
+  font-weight: var(--text_weight);
+  line-height: normal;
+}
+.privacy_policy_title:first-child, .shipping_policy_title:first-child, .return_title:first-child {
+   margin-top: 0px
+}
+.privacy_policy_title .icon-wings,.shipping_policy_title .icon-wings, .return_title .icon-wings{
+  margin-right: 10px;
+}
+.privacy-policy_paragraph,.shipping-policy_paragraph, .return_paragraph {
+  padding: 15px;
+}
+.privacy_image_wrapper,.shipping_image_wrapper,.return_image_wrapper{
+  padding-bottom: 40px;
+}
+/* ============================ privacy/shipping page end ============================ */
+@media screen and (max-width: 991px) {
+  .privacy_image_wrapper, .shipping_image_wrapper, .terms_image_wrapper,.return_image_wrapper {
+     padding-bottom: 35px;
+  }
+  .privacy_policy_title, .shipping_policy_title,.terms_title, .return_title{
+    padding: 10px;
+    margin-top: 20px;
+  }
+  .privacy_policy_title h3, .shipping_policy_title h3,.terms_title h3, .return_title h3{
+    font-size: 16px;
+  }
+  .privacy-policy_paragraph, .shipping-policy_paragraph,.terms_paragraph, .return_paragraph{
+    padding: 10px;
+  }
+}
+@media screen and (max-width: 991px) {
+  .privacy_image_wrapper, .shipping_image_wrapper, .terms_image_wrapper,.return_image_wrapper {
+     padding-bottom: 35px;
+  }
+}
+@media screen and (max-width: 840px) {
+  .privacy_image_wrapper, .shipping_image_wrapper, .terms_image_wrapper,.return_image_wrapper{
+     padding-bottom: 30px;
+  }
+}
+@media screen and (max-width: 767px) {
+  .privacy_image_wrapper, .shipping_image_wrapper, .terms_image_wrapper,.return_image_wrapper{
+     padding-bottom: 25px;
+  }
+}
+@media screen and (max-width: 575px) {
+  .privacy_image_wrapper, .shipping_image_wrapper, .terms_image_wrapper,.return_image_wrapper{
+     padding-bottom: 15px;
+  }
+  .privacy_policy_title , .shipping_policy_title, .terms_title, .return_title {
+    margin-top: 15px;
+  }
+}
+@media screen and (max-width: 380px) {
+  .privacy_policy_title h3, .shipping_policy_title h3,.terms_title h3, .return_title h3{
+    font-size: 14px;
+  }
+}

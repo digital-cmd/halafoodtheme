@@ -1,0 +1,81 @@
+{{ 'popup-cookie.css' | asset_url | stylesheet_tag }}
+<div class="gdpr-cookie cookie-popup" style="{% if settings.alignment == "left" %}left: 20px; right: auto{% elsif settings.alignment =="right" %}left: auto ; right: 20px{% endif %}">
+    <p>{{settings.cookie_text}}</p>
+  <a {% if settings.cookie_url %} href="{{settings.cookie_url}}" {% else %} role="link" aria-disabled="true" {% endif %}
+    class="cookie-policy">{{settings.sub_title}}</a>
+  <button type="submit" class="accept_cookie cookie_btn theme_buttons button" name="do-not-show">{{settings.btn_text}}</button>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var cookie = false;
+    var cookieContent = document.querySelector('.cookie-popup');
+    checkCookie();
+
+    if (cookie === true) {
+        cookieContent.style.display = 'none';
+    }
+
+    function setCookie(dt_gdpr_name, cookie_value, exdays) {
+        var d = new Date();
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+        var expires = "expires=" + d.toUTCString();
+        document.cookie = dt_gdpr_name + "=" + cookie_value + "; " + expires + "; path=/";
+    }
+
+    function getCookie(dt_gdpr_name) {
+        var name = dt_gdpr_name + "=";
+        var ca = document.cookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i].trim();
+            if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
+        }
+        return "";
+    }
+
+    function checkCookie() {
+        var user = getCookie("dt_gdpr_name");
+        if (user !== "") {
+            cookie = true;
+        } else {
+            if (user !== "" && user !== null) {
+                setCookie("cookie_value", "cookie_value", 365);
+            }
+        }
+    }
+
+    function deleteCookie() {
+        setCookie('dt_gdpr_name', '', -1);
+    }
+
+    document.querySelector('.accept_cookie').addEventListener('click', function() {
+        setCookie("dt_gdpr_name", "cookie_value", 365);
+        cookieContent.style.display = 'none';
+    });
+});
+
+
+</script>
+
+{% style %}
+.gdpr-cookie .cookie_btn{
+  background-color: {{ settings.button_bg }};
+  color: {{ settings.button_text }};
+}
+.gdpr-cookie .cookie_btn:hover{
+  background-color: {{ settings.button_hr_bg }};
+  color: {{ settings.button_hr_text }};
+}
+.gdpr-cookie{
+  background-color: {{ settings.box_bg }};
+  color: {{ settings.box_text }}
+}
+.gdpr-cookie .cookie-policy {
+  border-bottom: 1px solid {{ settings.box_text }};
+  color: {{ settings.box_text }};
+}
+.gdpr-cookie .cookie-policy:hover{
+  border-bottom: 1px solid {{ settings.box_hr_text }};
+  color: {{ settings.box_hr_text }};
+}
+{% endstyle %}

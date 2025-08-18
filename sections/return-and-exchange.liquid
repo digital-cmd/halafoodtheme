@@ -1,0 +1,245 @@
+{{ 'tsp.css' | asset_url | stylesheet_tag }}
+<div class="return-exchange_main">
+  <div class="page-width">
+    {% if section.settings.show_topimg %}
+      <div class="return_image_wrapper">
+        {% if section.settings.return_top_img != blank %}
+        <div class="media media--transparent ratio" style="--ratio-percent: 30%">
+          <img src="{{ section.settings.return_top_img | img_url: 'master' }}" alt="product-image" class="w-100" loading="lazy">
+        </div>
+        {% else %}
+        <div class="media media--transparent ratio" style="--ratio-percent: 30%">
+          {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+        </div>
+        {% endif %}
+      </div>
+    {% endif %}
+    <div class="return-exchange-part">
+      {% for block in section.blocks %}
+      {%- case block.type -%}
+        {%- when 'questions' -%}
+        <div class="return_title h3">
+          <div class="return-icon">
+            {% render 'icon-wings' %}
+          </div>
+          <h3 class="return-content">
+            {{ block.settings.return-exchange_title_text }}
+          </h3>
+        </div>
+     
+        {%- when 'answers' -%}
+        <p class="return_paragraph">{{ block.settings.return-exchange_paragraph_text }}</p>
+       {% endcase %}
+      {% endfor %}
+    </div>
+    
+  </div>
+</div>
+
+{% style %}
+  .return_title {
+    background: {{ section.settings.return_bg_color }};
+    color: {{ section.settings.return_title_color }};
+    fill: {{ section.settings.return_title_color }};
+  }
+  .return_paragraph {
+    color: {{ settings.content_color }};
+  }
+  .return-exchange_main {
+    padding-top: {{ section.settings.padding-top }}px;
+    padding-bottom: {{ section.settings.padding-bottom }}px;
+  }
+  @media screen and (max-width: 1429px) {
+    .return-exchange_main {
+      padding-top: {{ section.settings.padding-top-1429 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-1429 }}px;
+    }
+  }
+  @media screen and (max-width: 1199px) {
+    .return-exchange_main {
+      padding-top: {{ section.settings.padding-top-1199 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-1199 }}px;
+    }
+  }
+  @media screen and (max-width: 991px) {
+    .return-exchange_main {
+      padding-top: {{ section.settings.padding-top-991 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-991 }}px;
+    }
+  }
+  @media screen and (max-width: 767px) {
+    .return-exchange_main {
+      padding-top: {{ section.settings.padding-top-767 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-767 }}px;
+    }
+  }
+  @media screen and (max-width: 575px) {
+    .return-exchange_main {
+      padding-top: {{ section.settings.padding-top-575 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-575 }}px; 
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+  {
+  "name": "Return and exchange",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_topimg",
+      "label": "Show top image",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "return_top_img",
+      "label": "Image"
+    },
+    {
+      "type": "header",
+      "content": "Color settings"
+    },
+    {
+      "type": "color",
+      "id": "return_bg_color",
+      "label": "Return bg color",
+      "default": "#f6f4f3"
+    },
+    {
+      "type": "color",
+      "id": "return_title_color",
+      "label": "Return text color",
+      "default": "#333333"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "number",
+      "id": "padding-top",
+      "label": "Padding top",
+      "default": 60
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom",
+      "label": "Padding bottom",
+      "default": 60
+    },
+    {
+      "type": "header",
+      "content": "Screen wise section padding"
+    },
+    {
+      "type": "header",
+      "content": "@media screen 1429"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-1429",
+      "label": "Padding top",
+      "default": 50
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-1429",
+      "label": "Padding bottom",
+      "default": 50
+    },
+    {
+      "type": "header",
+      "content": "@media screen 1199"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-1199",
+      "label": "Padding top",
+      "default": 45
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-1199",
+      "label": "Padding bottom",
+      "default": 45
+    },
+    {
+      "type": "header",
+      "content": "@media screen 991"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-991",
+      "label": "Padding top",
+      "default": 40
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-991",
+      "label": "Padding bottom",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "@media screen 767"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-767",
+      "label": "Padding top",
+      "default": 35
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-767",
+      "label": "Padding bottom",
+      "default": 35
+    },
+    {
+      "type": "header",
+      "content": "@media screen 575"
+    },
+    {
+      "type": "number",
+      "id": "padding-top-575",
+      "label": "Padding top",
+      "default": 30
+    },
+    {
+      "type": "number",
+      "id": "padding-bottom-575",
+      "label": "Padding bottom",
+      "default": 30
+    }
+  ],
+  "blocks": [
+    {
+      "type": "questions",
+      "name": "Return title",
+      "settings": [
+        {
+          "type": "text",
+          "id": "return-exchange_title_text",
+          "default": "Return and exchange title",
+          "label": "Heading"
+        }
+      ]
+    },
+    {
+      "type": "answers",
+      "name": "Return paragraph",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "return-exchange_paragraph_text",
+          "label": "Paragraph",
+          "default": "Please read these Return and exchange of Service carefully before accessing or using our website. By accessing or using any part of the site, you agree to be bound by these Return and exchange of Service. If you do not agree to all the Return and exchange and conditions of this agreement, then you may not access the website or use any services. If these Return and exchange of Service are considered an offer, acceptance is expressly limited to these Return and exchange of Service."
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,7 @@
+.related-products {
+  display: block;
+}
+.related-products .product-form__input input[type='radio'] + label.color-swatch.variant-swatch{
+  width: 20px;
+  height: 20px
+}

@@ -1,0 +1,134 @@
+.fake-product-purchased {
+  pointer-events: none;
+  margin: 0;
+  height: 100px;
+  position: fixed;
+  bottom: 40px;
+  width: 100%;
+  z-index: 2;
+  -webkit-transition: all cubic-bezier(.47,1.21,.47,1.21) .3s;
+  transition: all cubic-bezier(.47,1.21,.47,1.21) .3s;
+}
+.fake-product-purchased.text-left {
+  left: 15px;
+}
+.fake-product-purchased .fake-product-title{
+  line-height: 1;
+}
+.fake-product-details {
+  font-size: 13px;
+  width: 100%;
+}
+.fake-product-purchased.text-right {
+  right: 40px;
+}
+.fake-product-purchased .fake-product-product {
+  position: absolute;
+  bottom: 0px;
+  left: -60px;
+  visibility: hidden;
+  display: block;
+  opacity: 0;
+  width: 100%;
+  max-width: 400px;
+  height: 100%;
+  display: inline-table;
+  padding: 10px 50px 10px 10px;
+  -webkit-transition: transform 1s ease,opacity .5s,visibility .5s;
+  transition: transform 1s ease,opacity .5s,visibility .5s;
+  box-shadow: 0 0 10px #0000000f;
+  border-radius: calc(var(--media-radius) / 2);
+  pointer-events: all;
+  transform: translate(-60px);
+}
+.fake-product-purchased .fake-product-product.active{
+  pointer-events: all;
+  opacity: 1;
+  left: 0;
+  visibility: visible;
+  transform: translate(0);
+}
+.fake-product-purchased .fake-product-image {
+  line-height: 0;
+}
+.time-verify svg {
+  margin-right: 5px;
+  width: 18px;
+  height: 18px;
+  stroke: #000;
+}
+.fake-product-product .timing{
+  display: flex;
+  align-items: center;
+}
+.fake-product-purchased .fake-product-product .fake-product-main-title{
+  display: flex;
+  column-gap: 10px;
+}
+.fake-product-purchased .fake-product-product > a img {
+  width: auto;
+  height: 94px;
+  object-fit: contain;
+  border-radius: calc(var(--media-radius) / 2);
+}
+.time-verify {
+  font-size: 13px;
+  display: flex;
+  margin-top: 20px;
+}
+.time-verify .timing{
+  margin-right: 26px;
+}
+.fake-product-title {
+    margin-top: 12px;
+}
+.fake-product-product .title {
+  font-size: 16px;
+  font-family: var(--font-heading-family);
+}
+.fake-product-purchased .fake-product-product .close-button {
+  height: 20px;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  text-align: center;
+  width: 20px;
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  border: 0;
+  border-radius: var(--buttons-radius);
+}
+.fake-product-purchased .fake-product-product .close-button svg {
+  height: 1em;
+  width: 1em;
+}
+.verification-fake .check-mark {
+  position: relative;
+  line-height: 1;
+  display: inline-block;
+  vertical-align: middle;
+}
+@media screen and (max-width: 991px) {
+    .fake-product-product .title {
+      font-size: 14px;
+    }
+}
+@media screen and (max-width: 767px) {
+  .fake-product-purchased .fake-product-product{
+    max-width: 390px;
+    padding: 10px 35px 10px 10px;
+  }
+  .fake-product-purchased.text-left {
+    left: 10px;
+  }
+  .fake-product-purchased.text-right {
+    right: 15px;
+  }
+  .fake-product-purchased {
+    bottom: 50px;
+  }
+}

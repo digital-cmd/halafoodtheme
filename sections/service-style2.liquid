@@ -1,0 +1,797 @@
+{{ 'service-section-style2.css' | asset_url | stylesheet_tag }}
+
+<div class="{{ section.settings.section_width }}">
+  <div class="section-{{ section.id }}-padding service-section {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+    <div class="page-width">
+      <div class="service--{{ section.settings.text_alignment }}">
+        {% if section.settings.heading-img != blank or section.settings.main_subheading != blank or section.settings.main_heading != blank or section.settings.main_paragraph != blank %}
+          <div class="service-tittle title_bottom_margin">
+          {% if section.settings.heading-img != blank %}
+            <div class="heading-img w-100 {{ section.settings.text_alignment }}">
+              <img src="{{ section.settings.heading-img | img_url: 'master' }}" alt="slider-img" class="w-100" loading="eager">
+            </div>
+          {% endif %}
+            {% if section.settings.main_subheading != blank %} <div class="theme_main_subheading">{{ section.settings.main_subheading }}</div>{% endif %}
+            {% if section.settings.main_heading != blank %}<div class="theme_main_heading">{{ section.settings.main_heading }}</div>{% endif %}
+            {% if section.settings.main_paragraph != blank %}<p class="theme_main_description">{{ section.settings.main_paragraph }}</p>{% endif %}
+          </div>
+        {% endif %}
+      </div>
+      <div class="service-main-wrap">
+        {% if section.settings.service-main != blank %}
+          <div class="media media--transparent ratio service_img" style="--ratio-percent: 61.2%">
+            <img src="{{ section.settings.service-main | img_url: 'master' }}" alt="icon-image" class="w-100" loading="lazy">
+          </div>
+          {% else %}
+          <div class="media media--transparent ratio service_img" style="--ratio-percent: 61.2%">
+            {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+          </div>
+          {% endif %}
+  
+           <div class="service-img service-img--{{ section.settings.service-align1 }} service-img1">
+              <div class="service-main-img">
+                {% if section.settings.service-img1 != blank %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ section.settings.service-img1 | image_url: width: 1920 | image_tag : loading: 'lazy', class: 'w-100' }}
+                </div>
+                {% else %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="service-content">
+                <div class="service-title">{{ section.settings.service-heading1 }}</div>
+                <div class="service-content">{{ section.settings.service-content1 }}</div>
+              </div>
+            </div>
+  
+           <div class="service-img service-img--{{ section.settings.service-align2 }} service-img2">
+              <div class="service-main-img">
+                {% if section.settings.service-img2 != blank %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ section.settings.service-img2 | image_url: width: 1920 | image_tag : loading: 'lazy', class: 'w-100' }}
+                </div>
+                {% else %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="service-content">
+                <div class="service-title">{{ section.settings.service-heading2 }}</div>
+                <div class="service-content">{{ section.settings.service-content2 }}</div>
+              </div>
+            </div>
+  
+          <div class="service-img service-img--{{ section.settings.service-align3 }} service-img3">
+              <div class="service-main-img">
+                {% if section.settings.service-img3 != blank %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ section.settings.service-img3 | image_url: width: 1920 | image_tag : loading: 'lazy', class: 'w-100' }}
+                </div>
+                {% else %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="service-content">
+                <div class="service-title">{{ section.settings.service-heading3 }}</div>
+                <div class="service-content">{{ section.settings.service-content3 }}</div>
+              </div>
+            </div>
+        
+          <div class="service-img service-img--{{ section.settings.service-align4 }} service-img4">
+              <div class="service-main-img">
+                {% if section.settings.service-img4 != blank %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ section.settings.service-img4 | image_url: width: 1920 | image_tag : loading: 'lazy', class: 'w-100' }}
+                </div>
+                {% else %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="service-content">
+                <div class="service-title">{{ section.settings.service-heading4 }}</div>
+                <div class="service-content">{{ section.settings.service-content4 }}</div>
+              </div>
+            </div>
+  
+          <div class="service-img service-img--{{ section.settings.service-align5 }} service-img5">
+              <div class="service-main-img">
+                {% if section.settings.service-img5 != blank %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ section.settings.service-img5 | image_url: width: 1920 | image_tag : loading: 'lazy', class: 'w-100' }}
+                </div>
+                {% else %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="service-content">
+                <div class="service-title">{{ section.settings.service-heading5 }}</div>
+                <div class="service-content">{{ section.settings.service-content5 }}</div>
+              </div>
+            </div>
+        
+            <div class="service-img service-img--{{ section.settings.service-align6 }} service-img6">
+              <div class="service-main-img">
+                {% if section.settings.service-img6 != blank %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ section.settings.service-img6 | image_url: width: 1920 | image_tag : loading: 'lazy', class: 'w-100' }}
+                </div>
+                {% else %}
+                <div class="media media--transparent ratio" style="--ratio-percent: 100%">
+                  {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="service-content">
+                <div class="service-title">{{ section.settings.service-heading6 }}</div>
+                <div class="service-content">{{ section.settings.service-content6 }}</div>
+              </div>
+          </div>
+    </div>
+  </div>
+</div>
+
+{%- style -%}
+  .service-section .heading-img.center{
+    margin: 0 auto;
+  }
+  .service-section .heading-img.right{
+    margin: 0 0 0 auto;
+  }
+  .service-section .theme_main_heading {
+    color: {{ section.settings.theme_heading_color }};
+  }
+  .service-section .theme_main_subheading {
+    color: {{ section.settings.theme_subheading_color }};
+  }
+  .service-section .theme_main_description{
+    color: {{ section.settings.content_color }};
+  }
+  .service-section .service-main-img{
+    background: {{ section.settings.content_bg }};
+  }
+  .service-section .service-title{
+    color: {{ section.settings.heading_color }};
+  }
+  .service-section .service-content{
+    color: {{ section.settings.desc_color }};
+  }
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding-top }}px;
+    padding-bottom: {{ section.settings.padding-bottom }}px;
+    margin-top: {{ section.settings.margin-top }}px;
+    margin-bottom: {{ section.settings.margin-bottom }}px;
+    background-color: {{ section.settings.section_bg }};
+  }
+  @media screen and (max-width: 1429px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-1429 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-1429 }}px;
+      margin-top: {{ section.settings.margin-top-1429 }}px;
+      margin-bottom: {{ section.settings.margin-bottom-1429 }}px;
+    }
+  }
+  @media screen and (max-width: 1199px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-1199 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-1199 }}px;
+      margin-top: {{ section.settings.margin-top-1199 }}px;
+      margin-bottom: {{ section.settings.margin-bottom-1199 }}px;
+    }
+  }
+  @media screen and (max-width: 991px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-991 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-991 }}px;
+      margin-top: {{ section.settings.margin-top-991 }}px;
+      margin-bottom: {{ section.settings.margin-bottom-991 }}px;
+    }
+  }
+  @media screen and (max-width: 767px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-767 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-767 }}px;
+      margin-top: {{ section.settings.margin-top-767 }}px;
+      margin-bottom: {{ section.settings.margin-bottom-767 }}px;  
+    }
+  }
+  @media screen and (max-width: 575px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding-top-575 }}px;
+      padding-bottom: {{ section.settings.padding-bottom-575 }}px;
+      margin-top: {{ section.settings.margin-top-575 }}px;
+      margin-bottom: {{ section.settings.margin-bottom-575 }}px;  
+    }
+  }
+{%- endstyle -%}
+
+
+{% schema %}
+  {
+  "name": "Service section style2",
+  "tag": "section",
+  "class": "Service section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_width",
+      "options": [
+        {
+          "value": "full_width",
+          "label": "Full width"
+        },
+        {
+          "value": "padding_width",
+          "label": "With padding"
+        }
+      ],
+      "label": "Section width",
+      "default": "full_width"
+    },
+    {
+      "type" : "image_picker",
+      "id" : "heading-img",
+      "label" : "Heading image"
+    },
+    {
+      "type": "text",
+      "id": "main_subheading",
+      "label": "Subheading",
+      "default": "Why Choose US"
+    },
+    {
+      "type": "textarea",
+      "id": "main_heading",
+      "label": "Heading",
+      "default": "Why Choose Our Products"
+    },
+    {
+      "type": "textarea",
+      "id": "main_paragraph",
+      "label": "Content",
+      "default": "Pair text with an image to focus on your chosen product."
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Main title alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Image setting"
+    },
+    {
+      "type": "image_picker",
+      "id": "service-main",
+      "label": "Main image",
+      "info": "810px X 525px"
+    },
+    {
+      "type": "header",
+      "content": "First content"
+    },
+    {
+      "type": "image_picker",
+      "id": "service-img1",
+      "label": "Image",
+      "info": "40px X 40px"
+    },
+    {
+      "type": "text",
+      "id": "service-heading1",
+      "label": "Heading",
+      "default": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "service-content1",
+      "label": "Content",
+      "default": "Pair text with an image to focus on your chosen product."
+    },
+    {
+      "type": "select",
+      "id": "service-align1",
+      "label": "Content title alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Second content"
+    },
+    {
+      "type": "image_picker",
+      "id": "service-img2",
+      "label": "Image",
+      "info": "40px X 40px"
+    },
+    {
+      "type": "text",
+      "id": "service-heading2",
+      "label": "Heading",
+      "default": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "service-content2",
+      "label": "Content",
+      "default": "Pair text with an image to focus on your chosen product."
+    },
+    {
+      "type": "select",
+      "id": "service-align2",
+      "label": "Content title alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Third content"
+    },
+    {
+      "type": "image_picker",
+      "id": "service-img3",
+      "label": "Image",
+      "info": "40px X 40px"
+    },
+    {
+      "type": "text",
+      "id": "service-heading3",
+      "label": "Heading",
+      "default": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "service-content3",
+      "label": "Content",
+      "default": "Pair text with an image to focus on your chosen product."
+    },
+    {
+      "type": "select",
+      "id": "service-align3",
+      "label": "Content title alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Fourth content"
+    },
+    {
+      "type": "image_picker",
+      "id": "service-img4",
+      "label": "Image",
+      "info": "40px X 40px"
+    },
+    {
+      "type": "text",
+      "id": "service-heading4",
+      "label": "Heading",
+      "default": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "service-content4",
+      "label": "Content",
+      "default": "Pair text with an image to focus on your chosen product."
+    },
+    {
+      "type": "select",
+      "id": "service-align4",
+      "label": "Content title alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Fifth content"
+    },
+    {
+      "type": "image_picker",
+      "id": "service-img5",
+      "label": "Image",
+      "info": "40px X 40px"
+    },
+    {
+      "type": "text",
+      "id": "service-heading5",
+      "label": "Heading",
+      "default": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "service-content5",
+      "label": "Content",
+      "default": "Pair text with an image to focus on your chosen product."
+    },
+    {
+      "type": "select",
+      "id": "service-align5",
+      "label": "Content title alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Sixth content"
+    },
+    {
+      "type": "image_picker",
+      "id": "service-img6",
+      "label": "Image",
+      "info": "40px X 40px"
+    },
+    {
+      "type": "text",
+      "id": "service-heading6",
+      "label": "Heading",
+      "default": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "service-content6",
+      "label": "Content",
+      "default": "Pair text with an image to focus on your chosen product."
+    },
+    {
+      "type": "select",
+      "id": "service-align6",
+      "label": "Content title alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Color settings"
+    },
+    {
+      "type": "color",
+      "id": "section_bg",
+      "label": "Section bg",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "theme_subheading_color",
+      "label": "Subheading color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "theme_heading_color",
+      "label": "Heading color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "content_color",
+      "label": "Description color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Content color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "desc_color",
+      "label": "Content description color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "content_bg",
+      "label": "Image bg",
+      "default": "#e5e5e5"
+    },
+    {
+        "type": "header",
+        "content": "t:sections.all.padding.section_padding_heading"
+      },
+      {
+        "type": "number",
+        "id": "padding-top",
+        "label": "t:sections.all.padding.padding_top",
+        "default": 120
+      },
+      {
+        "type": "number",
+        "id": "padding-bottom",
+        "label": "t:sections.all.padding.padding_bottom",
+        "default": 120
+      },
+      {
+        "type": "header",
+        "content": "Screen wise section padding"
+      },
+      {
+        "type": "header",
+        "content": "@media screen 1429"
+      },
+      {
+        "type": "number",
+        "id": "padding-top-1429",
+        "label": "Padding top",
+        "default": 70
+      },
+      {
+        "type": "number",
+        "id": "padding-bottom-1429",
+        "label": "Padding bottom",
+        "default": 70
+      },
+      {
+        "type": "header",
+        "content": "@media screen 1199"
+      },
+      {
+        "type": "number",
+        "id": "padding-top-1199",
+        "label": "Padding top",
+        "default": 60
+      },
+      {
+        "type": "number",
+        "id": "padding-bottom-1199",
+        "label": "Padding bottom",
+        "default": 60
+      },
+      {
+        "type": "header",
+        "content": "@media screen 991"
+      },
+      {
+        "type": "number",
+        "id": "padding-top-991",
+        "label": "Padding top",
+        "default": 50
+      },
+      {
+        "type": "number",
+        "id": "padding-bottom-991",
+        "label": "Padding bottom",
+        "default": 50
+      },
+      {
+        "type": "header",
+        "content": "@media screen 767"
+      },
+      {
+        "type": "number",
+        "id": "padding-top-767",
+        "label": "Padding top",
+        "default": 40
+      },
+      {
+        "type": "number",
+        "id": "padding-bottom-767",
+        "label": "Padding bottom",
+        "default": 40
+      },
+      {
+        "type": "header",
+        "content": "@media screen 575"
+      },
+      {
+        "type": "number",
+        "id": "padding-top-575",
+        "label": "Padding top",
+        "default": 30
+      },
+      {
+        "type": "number",
+        "id": "padding-bottom-575",
+        "label": "Padding bottom",
+        "default": 30
+      },
+      {
+        "type": "header",
+        "content": "Margin settings"
+      },
+      {
+        "type": "number",
+        "id": "margin-top",
+        "label": "Margin top",
+        "default": 0
+      },
+      {
+        "type": "number",
+        "id": "margin-bottom",
+        "label": "Margin bottom",
+        "default": 0
+      },
+      {
+        "type": "header",
+        "content": "Screen wise section margin"
+      },
+      {
+        "type": "header",
+        "content": "@media screen 1429"
+      },
+      {
+        "type": "number",
+        "id": "margin-top-1429",
+        "label": "Margin top",
+        "default": 0
+      },
+      {
+        "type": "number",
+        "id": "margin-bottom-1429",
+        "label": "Margin bottom",
+        "default": 0
+      },
+      {
+        "type": "header",
+        "content": "@media screen 1199"
+      },
+      {
+        "type": "number",
+        "id": "margin-top-1199",
+        "label": "Margin top",
+        "default": 0
+      },
+      {
+        "type": "number",
+        "id": "margin-bottom-1199",
+        "label": "Margin bottom",
+        "default": 0
+      },
+      {
+        "type": "header",
+        "content": "@media screen 991"
+      },
+      {
+        "type": "number",
+        "id": "margin-top-991",
+        "label": "Margin top",
+        "default": 0
+      },
+      {
+        "type": "number",
+        "id": "margin-bottom-991",
+        "label": "Margin bottom",
+        "default": 0
+      },
+      {
+        "type": "header",
+        "content": "@media screen 767"
+      },
+      {
+        "type": "number",
+        "id": "margin-top-767",
+        "label": "Margin top",
+        "default": 0
+      },
+      {
+        "type": "number",
+        "id": "margin-bottom-767",
+        "label": "Margin bottom",
+        "default": 0
+      },
+      {
+        "type": "header",
+        "content": "@media screen 575"
+      },
+      {
+        "type": "number",
+        "id": "margin-top-575",
+        "label": "Margin top",
+        "default": 0
+      },
+      {
+        "type": "number",
+        "id": "margin-bottom-575",
+        "label": "Margin bottom",
+        "default": 0
+      }
+  ],
+  "presets": [
+    {
+      "name": "Service section style2"
+    }
+  ]
+}
+{% endschema %}

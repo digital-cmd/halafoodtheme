@@ -1,0 +1,122 @@
+<div class="discount-code-container">
+  <div class="coupon_title">{{ 'sections.cart.disc_code_e' | t }}</div>
+  <div class="cart-discount input-wrapper">
+    <label for="discount_code" class="visually-hidden sr-only">{{ 'sections.cart.disc_code_enter' | t }}</label>
+    <input type="text" id="discount_code" name="discount" class="form-control field__input" value="" placeholder="{{ 'sections.cart.cod' | t }}"
+      form="cart">
+    <div class="apply-btn-wrapper">
+      <button type="button" class="apply-discount-code button theme_buttons">{{ 'customer.login_page.submit' | t }}</button>
+    </div>
+  </div>
+   <label class="message"></label>
+</div>
+
+{% style %}
+  .discount-code-container .coupon_title {
+    margin-bottom: 10px;
+    color: {{ settings.page_title_text_color }};
+    font-size: 16px;
+    line-height: calc(1 + 0.8 / var(--font-body-scale));
+  }
+  .discount-code-container input#discount_code{
+    background-color: {{ settings.input_bg_color }};
+    color: {{ settings.input_text_color }};
+    fill: {{ settings.input_text_color }};
+    border: 1px solid {{ settings.input_border_color }};
+  }
+  .discount-code-container input#discount_code::placeholder{
+    color: {{ settings.input_text_color }};
+  }
+  .discount-code-container .h3 {
+    margin-bottom: 2rem;
+    color: {{ settings.page_title_text_color }};
+  }
+  .cart-discount.input-wrapper {
+    display: flex;
+    justify-items: center;
+    align-items: center;
+    gap: 20px;
+  }
+  input#discount_code {
+    padding: 10px;
+    width: 100%;
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 14px;
+  }
+  button.apply-discount-code {
+    position: relative;
+    padding: 11px 22px;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    background-color: {{settings.button_bg}};
+    color: {{settings.button_text}};
+  }
+  button.apply-discount-code:hover{
+    background-color: {{settings.button_hr_bg}};
+    color: {{settings.button_hr_text}};
+  }
+  .loading::before {
+    border: 3px solid #acacac;
+    border-top: 2px solid #acacac;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    animation: spin .5s linear infinite;
+    content: '';
+    z-index: 1;
+    margin: 0 auto;
+    top: 15px;
+  }
+  .discount-code-container .message{
+    color:{{ settings.content_color }};
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+{% endstyle %}
+
+<script>
+  window.shopUrl = '{{ request.origin }}';
+  const discountSubmitBtn = document.querySelector('.apply-discount-code'),
+    discountCodeInput = document.querySelector('[name="discount"]');
+
+  discountSubmitBtn.addEventListener('click', (event) => {
+    event.preventDefault();
+    const discountCode = discountCodeInput.value;
+
+    event.target.classList.add('loading');
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', shopUrl + '/cart.js');
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        discountSubmitBtn.classList.remove('loading');
+      } 
+    };
+    xhr.send(JSON.stringify({ 'attributes[discount]': discountCode }));
+    xhr.addEventListener('error', function(e) {
+        console.log(`${e.type}}`)
+        discountSubmitBtn.classList.remove('loading');
+    });
+  });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+  var applyButton = document.querySelector(".apply-discount-code");
+  var inputBox = document.querySelector("#discount_code");
+  var message = document.querySelector(".message");
+
+  applyButton.addEventListener("click", function() {
+    if (inputBox.value === "") {
+      message.innerHTML = "<p>Please enter a coupon or discount code.</p>";
+    } else {
+      message.innerHTML = "";
+    }
+  });
+});
+</script>

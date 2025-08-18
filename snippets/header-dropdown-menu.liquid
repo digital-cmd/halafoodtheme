@@ -1,0 +1,146 @@
+{% comment %}
+  Renders a standard dropdown style menu for the header.
+
+  Usage:
+  {% render 'header-dropdown-menu' %}
+{% endcomment %}
+
+<nav class="header__inline-menu header-dropdown-menu">
+  <ul class="list-menu list-menu--inline" role="list">
+    {%- for link in section.settings.menu.links -%}
+      <li>
+        {%- if link.links != blank -%}
+          <header-menu>
+            <details id="Details-HeaderMenu-{{ forloop.index }}">
+              <summary
+                id="HeaderMenu-{{ link.handle }}"
+                class="header__menu-item list-menu__item link focus-inset"
+              >
+                <span
+                  {%- if link.child_active %}
+                    class="header__active-menu-item"
+                  {% endif %}
+                >
+                  {{- link.title | escape -}}
+                </span>
+                {% render 'icon-caret' %}
+              </summary>
+              <ul
+                id="HeaderMenu-MenuList-{{ forloop.index }}"
+                class="header__submenu list-menu list-menu--disclosure caption-large motion-reduce global-settings-popup"
+                role="list"
+                tabindex="-1"
+              >
+                {%- for childlink in link.links -%}
+                  {% if childlink.title contains 'https://' or childlink.title contains 'http://' %}
+                    {% assign img_url = childlink.title | split:'|' %}
+                      <li>
+                        <div class="mega_img_container">
+                          <a href="{{ childlink.url }}">
+                            <div class="mega_zoom_img">
+                              <img src="{{ img_url[1] }}" class="mega_product_image" alt="megamenu-img">
+                            </div>
+                            <h4>{{ img_url[0] }}</h4>
+                          </a>
+                        </div>
+                      </li>
+                    {% else %}
+                      <li>
+                        {%- if childlink.links == blank -%}
+                        <a href="{{ childlink.url }}"
+                          class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if childlink.current %} list-menu__item--active{% endif %}"
+                          {% if childlink.current %} aria-current="page" {% endif %}>
+                          {%- if childlink.title contains '[' and childlink.title contains ']'
+                          -%}{{childlink.title | escape | split: '[' | first}}{%- else -%}{{childlink.title |
+                          escape}}{%- endif -%}
+                          {%- if childlink.title contains '[' and childlink.title contains ']' -%}
+                          {%- assign labelName = childlink.title | escape | split:'[' | last | replace:']',''
+                          -%}
+                          {%- case labelName -%}
+                          {%- when 'new' -%} {%- assign labelClass = 'menu-label--new' -%}
+                          {%- when 'hot' -%} {%- assign labelClass = 'menu-label--hot' -%}
+                          {%- when 'sale' -%} {%- assign labelClass = 'menu-label--sale' -%}
+                          {%- else -%} {%- assign labelClass = 'menu-label--other' -%}
+                          {%- endcase -%}
+                          <span class="menu-label {{labelClass}}"><span>{{labelName}}</span></span>
+                          {%- endif -%}
+                        </a>
+                        {%- else -%}
+                        <details id="Details-HeaderSubMenu-{{ link.handle }}-{{ childlink.handle }}">
+                          <summary
+                            id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
+                            class="header__menu-item link link--text list-menu__item focus-inset caption-large"
+                          >
+                            <span>{{ childlink.title | escape }}</span>
+                            {% render 'icon-caret' %}
+                          </summary>
+                           <ul id="HeaderMenu-SubMenuList-{{ forloop.index }}"
+                            class="header__submenu list-menu motion-reduce">
+                            {%- for grandchildlink in childlink.links -%}
+                            {% if grandchildlink.title contains 'https://' or grandchildlink.title contains 'http://' %}
+                            {% assign img_url = grandchildlink.title | split:'|' %}
+                            <li>
+                              <div class="mega_img_container">
+                                <a href="{{ grandchildlink.url }}">
+                                  <div class="mega_zoom_img">
+                                    <img src="{{ img_url[1] }}" class="mega_product_image" alt="megamenu-img">
+                                  </div>
+                                  <h4>{{ img_url[0] }}</h4>
+                                </a>
+                              </div>
+                            </li>
+                            {% else %}
+                            <li>
+                              <a href="{{ grandchildlink.url }}"
+                                class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if grandchildlink.current %} list-menu__item--active{% endif %}"
+                                {% if grandchildlink.current %} aria-current="page" {% endif %}>
+                                {%- if grandchildlink.title contains '[' and grandchildlink.title contains ']'
+                                -%}{{grandchildlink.title | escape | split: '[' | first}}{%- else
+                                -%}{{grandchildlink.title | escape}}{%- endif -%}
+                                {%- if grandchildlink.title contains '[' and grandchildlink.title contains ']'
+                                -%}
+                                {%- assign labelName = grandchildlink.title | escape | split:'[' | last |
+                                replace:']','' -%}
+                                {%- case labelName -%}
+                                {%- when 'new' -%} {%- assign labelClass = 'menu-label--new' -%}
+                                {%- when 'hot' -%} {%- assign labelClass = 'menu-label--hot' -%}
+                                {%- when 'sale' -%} {%- assign labelClass = 'menu-label--sale' -%}
+                                {%- else -%} {%- assign labelClass = 'menu-label--other' -%}
+                                {%- endcase -%}
+                                <span class="menu-label {{labelClass}}"><span>{{labelName}}</span></span>
+                                {%- endif -%}
+                              </a>
+                            </li>
+                            {% endif %}
+                            {%- endfor -%}
+                          </ul>
+                        </details>
+                      {%- endif -%}
+                    </li>
+                  {% endif %}
+                {%- endfor -%}
+              </ul>
+            </details>
+          </header-menu>
+        {%- else -%}
+          <a
+            id="HeaderMenu-{{ link.handle }}"
+            href="{{ link.url }}"
+            class="header__menu-item list-menu__item link link--text focus-inset"
+            {% if link.current %}
+              aria-current="page"
+            {% endif %}
+          >
+            <span
+              {%- if link.current %}
+                class="header__active-menu-item"
+              {% endif %}
+            >
+              {{- link.title | escape -}}
+            </span>
+          </a>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+</nav>

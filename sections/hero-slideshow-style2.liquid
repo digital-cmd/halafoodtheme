@@ -1,0 +1,904 @@
+{{ 'hero-slideshow-style2.css' | asset_url | stylesheet_tag }}
+<div class="section-{{ section.id }}-padding heroslideshow_style2">
+  <div class="{{ section.settings.section_width }}">
+    <div class="{{ section.settings.slideshow_style }}">
+      <div class="slider-row">
+        <div class="gudget-left-part">
+          <div class="swiper-container swiper-container-gudget"
+            data-autoplay="{{ section.settings.autoplay }}" data-speed="{{ section.settings.slideshow_speed}}" data-loop="{{ section.settings.loop }}">
+              <div class="swiper-wrapper">
+                {% for block in section.blocks %}
+                  <div class="swiper-slide slider-{{ block.id }}">
+                     <div class="welcom-image">
+                       {% if block.settings.slider_image != blank %}
+                        <div class="media media--transparent ratio w-100" style="--ratio-percent: 62.631%">
+                          {{ block.settings.slider_image | image_url: width: 1920 | image_tag : loading: 'eager', class: 'w-100' }}
+                        </div>
+                        {% else %}
+                        <div class="media media--transparent ratio w-100" style="--ratio-percent: 62.631%">
+                          {{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                        </div>
+                       {% endif %}
+                        <div class="banner-inner slider-text--{{ block.settings.text_alignment }} slider-block--{{ block.settings.text_block_alignment }}">
+                  
+                            {% if block.settings.slider_subtitle != blank %}
+                              <div class="ttbaaner-subtitle theme_main_subheading">{{ block.settings.slider_subtitle }}</div>
+                            {% endif %}
+                            {% if block.settings.slider_title != blank %}
+                              <h2 class="ttbaaner-title">{{ block.settings.slider_title }}</h2>
+                            {% endif %}
+
+                            <div class="offer_text">
+                              {% if block.settings.offer_text2 != blank %}
+                                  <span class="theme_main_subheading offer_subheading">{{ block.settings.offer_text2 }}</span>
+                              {% endif %}
+                               {% if block.settings.offer_text2-1 != blank %}
+                                <span class="theme_main_heading offer_heading">{{ block.settings.offer_text2-1 }}</span>
+                              {% endif %}
+                            </div>
+                          
+                           <a {% if block.settings.slider_btn %} href="{{ block.settings.slider_btn }}" {% else %} role="link"
+                            aria-disabled="true" {% endif %} class="slider-btn button theme_buttons">{{ block.settings.slider-btn-text }}</a>
+                        </div>
+                     </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% if section.settings.arrows %}
+              <div class="swiper-buttons">
+                <div class="content-buttons">
+                  <div class="slider2-swiper-button-next swiper-button-next">{% render 'icon-caret' %}
+                  </div>
+                  <div class="slider2-swiper-button-prev swiper-button-prev">{% render 'icon-caret' %}
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+              {% if section.settings.dots -%}
+              <div class="swiper-pagination slider2-swiper-pagination"
+                id="swiper-pagination-{{section.id}}"></div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="gudget-right-part">
+          <div class="gudget-top-banner">
+            <div class="gudget-top-banner-content">
+              {% if section.settings.first_banner_img != blank %}
+                <div class="media media--transparent ratio w-100" style="--ratio-percent: 62.635%">
+                  {{ section.settings.first_banner_img | image_url: width: 1920 | image_tag : loading: 'eager', class: 'w-100' }}
+                </div>
+                {% else %}
+                <div class="media media--transparent ratio w-100" style="--ratio-percent: 62.635%">
+                  {{ 'collection-3' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                </div>
+                {% endif %}
+                <div class="ttbanner-content banner1-text--{{ section.settings.banner1_text_alignment }} banner1-block--{{ section.settings.banner1_text_block_alignment }}">
+                  {% if section.settings.first_banner_subheading != blank %}
+                    <div class="ttbaaner-subtitle theme_main_subheading">{{ section.settings.first_banner_subheading }}</div>
+                  {% endif %}
+                  {% if section.settings.first_banner_heading != blank %}
+                    <h2 class="ttbaaner-title theme_main_heading">{{ section.settings.first_banner_heading }}</h2>
+                  {% endif %}
+                  <div class="offer_text">
+                    {% if block.settings.offer_text2 != blank %}
+                        <span class="theme_main_subheading offer_subheading">{{ block.settings.offer_text2 }}</span>
+                    {% endif %}
+                     {% if block.settings.offer_text2-1 != blank %}
+                      <span class="theme_main_heading offer_heading">{{ block.settings.offer_text2-1 }}</span>
+                    {% endif %}
+                  </div>
+                  <a {% if section.settings.first_banner_btn_link %} href="{{ section.settings.first_banner_btn_link }}" {% else %} role="link"
+                      aria-disabled="true" {% endif %} class="slider-btn button theme_buttons">{{ section.settings.first_banner_btn }}</a>
+                </div>
+            </div>
+        
+        </div>
+        <div class="gudget-bottom-banner">
+            <div class="gudget-b--banner">
+                {% if section.settings.second_banner_img != blank %}
+                <div class="media media--transparent ratio w-100" style="--ratio-percent: 62.635%">
+                  {{ section.settings.second_banner_img | image_url: width: 1920 | image_tag : loading: 'eager', class: 'w-100' }}
+                </div>
+                {% else %}
+                <div class="media media--transparent ratio w-100" style="--ratio-percent: 62.635%">
+                  {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                </div>
+                {% endif %}
+                <div class="ttbanner-content banner1-text--{{ section.settings.banner2_text_alignment }} banner1-block--{{ section.settings.banner2_text_block_alignment }}">
+                  {% if section.settings.second_banner_subheading != blank %}
+                    <div class="ttbaaner-subtitle theme_main_subheading">{{ section.settings.second_banner_subheading }}</div>
+                  {% endif %}
+                  {% if section.settings.second_banner_heading != blank %}
+                    <h2 class="ttbaaner-title theme_main_heading">{{ section.settings.second_banner_heading }}</h2>
+                  {% endif %}
+                  <a {% if section.settings.second_banner_btn_link %} href="{{ section.settings.second_banner_btn_link }}" {% else %} role="link"
+                  aria-disabled="true" {% endif %} class="slider-btn button theme_buttons">{{ section.settings.second_banner_btn }}</a>
+                </div>
+            </div>
+          </div>
+      </div>
+      <div class="gudget-new-inner-right">
+          <div class="gudget-last-banner-content">
+            {% if section.settings.third_banner_img != blank %}
+              <div class="media media--transparent ratio w-100" style="--ratio-percent: 125.27%">
+                <img src="{{ section.settings.third_banner_img | img_url: 'master' }}" alt="slider-img" class="w-100" loading="eager">
+              </div>
+              {% else %}
+              <div class="media media--transparent ratio w-100" style="--ratio-percent: 125.27%">
+                {{ 'collection-3' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+              </div>
+              {% endif %}
+              <div class="ttbanner-content banner1-text--{{ section.settings.banner3_text_alignment }} banner1-block--{{ section.settings.banner3_text_block_alignment }}">
+                  <div class="ttbaaner-subtitle theme_main_subheading">{{ section.settings.third_banner_subheading }}</div>
+                  <h2 class="ttbaaner-title theme_main_heading">{{ section.settings.third_banner_heading }}</h2>
+                  <a {% if section.settings.third_banner_btn_link %} href="{{ section.settings.third_banner_btn_link }}" {% else %} role="link"
+                      aria-disabled="true" {% endif %} class="slider-btn button theme_buttons">{{ section.settings.third_banner_btn }}</a>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% style %}
+  .section-{{ section.id }}-padding{
+    margin-top: {{ section.settings.slider-top }}px;
+  }
+  .welcome-slider .gudget-new-inner-right .slider-btn{
+    background:{{ section.settings.theme_btn_bg_color1 }};
+    color:{{ section.settings.theme_btn_text_color1 }};
+  }
+  .welcome-slider .gudget-new-inner-right .slider-btn:hover{
+    background:{{ section.settings.theme_btn_hr_bg_color1 }};
+    color:{{ section.settings.theme_btn_hr_text_color1 }};
+  }
+  .welcome-slider .gudget-new-inner-right .ttbaaner-title{
+    color: {{ section.settings.heading_color1 }};
+  }
+  .welcome-slider .gudget-new-inner-right .theme_main_subheading{
+      color: {{ section.settings.subheading_color1 }};
+    }
+  {% for block in section.blocks %}
+   .welcome-slider .slider-{{ block.id }} .slider-btn{
+    background:{{ block.settings.theme_btn_bg }};
+    color:{{ block.settings.theme_btn_text }};
+  }
+  .welcome-slider .slider-{{ block.id }} .slider-btn:hover{
+    background:{{ block.settings.theme_btn_hr_bg }};
+    color:{{ block.settings.theme_btn_hr_text }};
+  }
+  .welcome-slider .slider-{{ block.id }} .welcom-image .ttbaaner-title{
+    color: {{ block.settings.slider_heading_color}};
+  }
+  .welcome-slider .slider-{{ block.id }} .welcom-image .theme_main_subheading{
+    color: {{ block.settings.slider_subheading_color}};
+  }
+  .welcome-slider .slider-{{ block.id }} .welcom-image .offer_text .offer_subheading{
+    color: {{ block.settings.slider_heading_color}};
+  }
+  .welcome-slider .slider-{{ block.id }} .welcom-image .offer_text .offer_heading{
+    color: {{ block.settings.slider_subheading_color}};
+  }
+  .welcome-slider .slider-{{ block.id }} .ttbaaner-title{
+    font-size: {{ block.settings.heading_size }}px;
+  }
+  @media screen and (max-width: 1429px){
+    .welcome-slider .slider-{{ block.id }} .ttbaaner-title{ 
+      font-size: {{ block.settings.heading_size | times: 0.82 | round: 0 }}px;
+    }
+  }
+  @media screen and (max-width: 1199px){
+    .welcome-slider .slider-{{ block.id }} .ttbaaner-title{ 
+      font-size: {{ block.settings.heading_size | times: 0.60 | round: 0 }}px;
+    }
+  }
+  @media screen and (max-width: 1099px){
+    .welcome-slider .slider-{{ block.id }} .ttbaaner-title{ 
+      font-size: {{ block.settings.heading_size | times: 0.50 | round: 0 }}px;
+    }
+  }
+  @media screen and (max-width: 840px){
+  .section-{{ section.id }}-padding{
+      margin-top: {{ section.settings.slider-top | times: 0.50 | round: 0 }}px;
+    }
+  }
+  @media screen and (max-width: 575px){
+    .welcome-slider .slider-{{ block.id }} .ttbaaner-title{ 
+      font-size: {{ block.settings.heading_size | times: 0.45 | round: 0 }}px;
+    }
+  }
+  @media screen and (max-width: 479px){
+    .welcome-slider .slider-{{ block.id }} .ttbaaner-title{ 
+      font-size: {{ block.settings.heading_size | times: 0.33 | round: 0 }}px;
+    }
+  }
+  {% endfor %}
+   .welcome-slider .gudget-right-part .slider-btn{
+     background:{{ section.settings.theme_btn_bg_color }};
+    color:{{ section.settings.theme_btn_text_color }};
+   }
+  .welcome-slider .gudget-right-part .slider-btn:hover{
+    background:{{ section.settings.theme_btn_hr_bg_color }};
+    color:{{ section.settings.theme_btn_hr_text_color }};
+  }
+  .welcome-slider .swiper-button-next,
+  .welcome-slider .swiper-button-prev{
+    background: {{ settings.button_bg }}; 
+    color: {{ settings.button_text }};
+  }
+  .welcome-slider .swiper-button-next:hover,
+  .welcome-slider .swiper-button-prev:hover{
+    background: {{ settings.button_hr_bg }}; 
+    color: {{ settings.button_hr_text }};
+  }
+  .welcome-slider .swiper-pagination-bullet { 
+    background: {{ settings.theme_dots }}; 
+  }  
+  .welcome-slider .swiper-pagination-bullet.swiper-pagination-bullet-active { 
+    background: {{ settings.theme_dots_active }};
+  }
+  .welcome-slider .ttbaaner-title{
+    color: {{ section.settings.heading_color}};
+  }
+  .welcome-slider .theme_main_subheading{
+    color: {{ section.settings.subheading_color}};
+  }
+  .welcome-slider .ttbaaner-title {
+    font-weight: var(--text_weight);
+    line-height: 1.2;
+    text-transform: var(--text_style);
+  }
+{% endstyle %}
+
+{% schema %}
+  {
+  "name": "Slideshow style2",
+  "class": "index-section welcome-slider",
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_width",
+      "options": [
+        {
+          "value": "full_width",
+          "label": "Full width"
+        },
+        {
+          "value": "page-width",
+          "label": "Page width"
+        },
+        {
+          "value": "padding_width",
+          "label": "With padding"
+        }
+      ],
+      "label": "Section width",
+      "default": "full_width"
+    },
+    {
+      "type": "select",
+      "id": "slideshow_style",
+      "options": [
+        {
+          "value": "first_slider",
+          "label": "First style"
+        },
+        {
+          "value": "second_slider",
+          "label": "Second style"
+        }
+      ],
+      "default": "first_slider",
+      "label": "Slider style"
+    },
+    {
+      "type": "header",
+      "content": "First banner Settings"
+    },
+    {
+      "type": "image_picker",
+      "id": "first_banner_img",
+      "label": "Banner image"
+    },
+    {
+      "type": "text",
+      "id": "first_banner_subheading",
+      "label": "Banner subheading",
+      "default": "Subheading"
+    },
+    {
+      "type": "textarea",
+      "id": "first_banner_heading",
+      "label": "Banner heading",
+      "default": "Image heading"
+    },
+    {
+      "type": "text",
+      "id": "first_banner_btn",
+      "label": "Button label",
+      "default": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "first_banner_btn_link",
+      "label": "Button link"
+    },
+    {
+      "type": "select",
+      "id": "banner1_text_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center",
+      "label": "Banner text alignment"
+    },
+    {
+      "type": "select",
+      "id": "banner1_text_block_alignment",
+      "label": "Block position",
+      "options": [
+        {
+          "value": "top-left",
+          "label": "Top left"
+        },
+        {
+          "value": "top-center",
+          "label": "Top center"
+        },
+        {
+          "value": "top-right",
+          "label": "Top right"
+        },
+        {
+          "value": "middle-left",
+          "label": "Center left"
+        },
+        {
+          "value": "middle-center",
+          "label": "Center"
+        },
+        {
+          "value": "middle-right",
+          "label": "Center right"
+        },
+        {
+          "value": "bottom-left",
+          "label": "Bottom left"
+        },
+        {
+          "value": "bottom-center",
+          "label": "Bottom center"
+        },
+        {
+          "value": "bottom-right",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "middle-left"
+    },
+    {
+      "type": "header",
+      "content": "Second banner Settings"
+    },
+    {
+      "type": "image_picker",
+      "id": "second_banner_img",
+      "label": "Banner image"
+    },
+    {
+      "type": "text",
+      "id": "second_banner_subheading",
+      "label": "Banner subheading",
+      "default": "Subheading"
+    },
+    {
+      "type": "textarea",
+      "id": "second_banner_heading",
+      "label": "Banner heading",
+      "default": "Image heading"
+    },
+    {
+      "type": "text",
+      "id": "second_banner_btn",
+      "label": "Button label",
+      "default": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "second_banner_btn_link",
+      "label": "Button link"
+    },
+    {
+      "type": "select",
+      "id": "banner2_text_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center",
+      "label": "Banner text alignment"
+    },
+    {
+      "type": "select",
+      "id": "banner2_text_block_alignment",
+      "label": "Block position",
+      "options": [
+        {
+          "value": "top-left",
+          "label": "Top left"
+        },
+        {
+          "value": "top-center",
+          "label": "Top center"
+        },
+        {
+          "value": "top-right",
+          "label": "Top right"
+        },
+        {
+          "value": "middle-left",
+          "label": "Center left"
+        },
+        {
+          "value": "middle-center",
+          "label": "Center"
+        },
+        {
+          "value": "middle-right",
+          "label": "Center right"
+        },
+        {
+          "value": "bottom-left",
+          "label": "Bottom left"
+        },
+        {
+          "value": "bottom-center",
+          "label": "Bottom center"
+        },
+        {
+          "value": "bottom-right",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "middle-right"
+    },
+    {
+      "type": "header",
+      "content": "Color settings"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading color",
+      "default": "#2a6877"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "theme_btn_bg_color",
+      "label": "Button background color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "theme_btn_text_color",
+      "label": "Button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "theme_btn_hr_bg_color",
+      "label": "Button hover background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "theme_btn_hr_text_color",
+      "label": "Button hover text color",
+      "default": "#333333"
+    },
+    {
+      "type": "header",
+      "content": "Third banner Settings"
+    },
+    {
+      "type": "image_picker",
+      "id": "third_banner_img",
+      "label": "Banner image"
+    },
+    {
+      "type": "text",
+      "id": "third_banner_subheading",
+      "label": "Banner subheading",
+      "default": "Subheading"
+    },
+    {
+      "type": "textarea",
+      "id": "third_banner_heading",
+      "label": "Banner heading",
+      "default": "Image heading"
+    },
+    {
+      "type": "text",
+      "id": "third_banner_btn",
+      "label": "Button label",
+      "default": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "third_banner_btn_link",
+      "label": "Button link"
+    },
+    {
+      "type": "select",
+      "id": "banner3_text_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center",
+      "label": "Banner text alignment"
+    },
+    {
+      "type": "select",
+      "id": "banner3_text_block_alignment",
+      "label": "Block position",
+      "options": [
+        {
+          "value": "top-left",
+          "label": "Top left"
+        },
+        {
+          "value": "top-center",
+          "label": "Top center"
+        },
+        {
+          "value": "top-right",
+          "label": "Top right"
+        },
+        {
+          "value": "middle-left",
+          "label": "Center left"
+        },
+        {
+          "value": "middle-center",
+          "label": "Center"
+        },
+        {
+          "value": "middle-right",
+          "label": "Center right"
+        },
+        {
+          "value": "bottom-left",
+          "label": "Bottom left"
+        },
+        {
+          "value": "bottom-center",
+          "label": "Bottom center"
+        },
+        {
+          "value": "bottom-right",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "middle-right"
+    },
+    {
+      "type": "header",
+      "content": "Color settings"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color1",
+      "label": "Subheading color",
+      "default": "#2a6877"
+    },
+    {
+      "type": "color",
+      "id": "heading_color1",
+      "label": "Heading color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "theme_btn_bg_color1",
+      "label": "Button background color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "theme_btn_text_color1",
+      "label": "Button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "theme_btn_hr_bg_color1",
+      "label": "Button hover background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "theme_btn_hr_text_color1",
+      "label": "Button hover text color",
+      "default": "#333333"
+    },
+    {
+      "type": "header",
+      "content": "Slider settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "loop",
+      "label": "Loop enable",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay enable",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "slideshow_speed",
+      "label": "Timing for autoplaying slider",
+      "options": [
+        {
+          "value": "1000",
+          "label": "1 seconds"
+        },
+        {
+          "value": "2000",
+          "label": "2 seconds"
+        },
+        {
+          "value": "3000",
+          "label": "3 seconds"
+        },
+        {
+          "value": "4000",
+          "label": "4 seconds"
+        },
+        {
+          "value": "5000",
+          "label": "5 seconds"
+        }
+      ],
+      "default": "1000"
+    },
+    {
+      "type": "checkbox",
+      "id": "arrows",
+      "label": "Enable navigation arrows",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "dots",
+      "label": "Enable pagination dots",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "slider-top",
+      "label": "Margin top",
+      "default": "0"
+    }
+  ],
+    "blocks": [
+    {
+      "type": "Slider",
+      "name": "Slider",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "slider_image",
+          "label": "Slider image"
+        },
+        {
+          "type": "text",
+          "id": "slider_subtitle",
+          "label": "Subheading",
+          "default": "Subheading"
+        },
+        {
+          "type": "textarea",
+          "id": "slider_title",
+          "label": "Heading",
+          "default": "Image heading"
+        },
+        {
+          "type": "range",
+          "id": "heading_size",
+          "label": "Heading font size",
+          "min": 20,
+          "max": 100,
+          "step": 1,
+          "default": 36,
+          "unit": "px"
+        },
+        {
+          "type": "text",
+          "id": "offer_text2",
+          "label": "Offer first text",
+          "default": "Flat"
+        },
+        {
+          "type": "text",
+          "id": "offer_text2-1",
+          "label": "Offer second text",
+          "default": "30% off"
+        },
+        {
+          "type": "text",
+          "id": "slider-btn-text",
+          "label": "Button label",
+          "default": "Button label"
+        },
+        {
+          "type": "url",
+          "id": "slider_btn",
+          "label": "Button link"
+        },
+        {
+          "type": "select",
+          "id": "text_alignment",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "center",
+          "label": "Banner text alignment"
+        },
+        {
+          "type": "select",
+          "id": "text_block_alignment",
+          "label": "Block position",
+          "options": [
+            {
+              "value": "top-left",
+              "label": "Top left"
+            },
+            {
+              "value": "top-center",
+              "label": "Top center"
+            },
+            {
+              "value": "top-right",
+              "label": "Top right"
+            },
+            {
+              "value": "middle-left",
+              "label": "Center left"
+            },
+            {
+              "value": "middle-center",
+              "label": "Center"
+            },
+            {
+              "value": "middle-right",
+              "label": "Center right"
+            },
+            {
+              "value": "bottom-left",
+              "label": "Bottom left"
+            },
+            {
+              "value": "bottom-center",
+              "label": "Bottom center"
+            },
+            {
+              "value": "bottom-right",
+              "label": "Bottom right"
+            }
+          ],
+          "default": "middle-center"
+        },
+        {
+          "type": "header",
+          "content": "Color settings"
+        },
+        {
+          "type": "color",
+          "id": "slider_subheading_color",
+          "label": "Subheading color",
+          "default": "#2a6877"
+        },
+        {
+          "type": "color",
+          "id": "slider_heading_color",
+          "label": "Heading color",
+          "default": "#333333"
+        },
+        {
+          "type": "color",
+          "id": "theme_btn_bg",
+          "label": "Button background color",
+          "default": "#333333"
+        },
+        {
+          "type": "color",
+          "id": "theme_btn_text",
+          "label": "Button text color",
+          "default": "#ffffff"
+        },
+        {
+          "type": "color",
+          "id": "theme_btn_hr_bg",
+          "label": "Button hover background color",
+          "default": "#ffffff"
+        },
+        {
+          "type": "color",
+          "id": "theme_btn_hr_text",
+          "label": "Button hover text color",
+          "default": "#333333"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slideshow style2",
+      "category": "Slideshow style2",
+      "blocks": [
+        {
+          "type": "Slider"
+        },
+        {
+          "type": "Slider"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+

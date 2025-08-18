@@ -1,0 +1,12 @@
+{%- if product.handle != blank -%}
+{% if settings.p_enable_wishlist %}
+  <button type="button" aria-label="Add to wishlist" class="" button-wishlist data-product-handle="{{ product.handle }}">
+    {%- render 'icon-wishlist' -%}
+  </button>
+{% endif %}
+{% if settings.p_enable_compare %}
+  <button type="button" aria-label="Add to compare" class="" button-compare data-product-handle="{{ product.handle }}">
+    {%- render 'icon-compare' -%}
+  </button>
+{% endif %}
+{%- endif -%}
