@@ -1,288 +1,133 @@
-{%- style -%}
-  .custom_section_wrapper{
-    background-color: {{section.settings.section_bg}};
-  }
-  .section-{{ section.id }}-padding {
-    padding-top: {{ section.settings.padding-top }}px;
-    padding-bottom: {{ section.settings.padding-bottom }}px;
-    margin-top: {{ section.settings.margin-top }}px;
-    margin-bottom: {{ section.settings.margin-bottom }}px;
-  }
-  @media screen and (max-width: 1429px) {
-    .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding-top-1429 }}px;
-      padding-bottom: {{ section.settings.padding-bottom-1429 }}px;
-      margin-top: {{ section.settings.margin-top-1429 }}px;
-      margin-bottom: {{ section.settings.margin-bottom-1429 }}px;
-    }
-  }
-  @media screen and (max-width: 1199px) {
-    .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding-top-1199 }}px;
-      padding-bottom: {{ section.settings.padding-bottom-1199 }}px;
-      margin-top: {{ section.settings.margin-top-1199 }}px;
-      margin-bottom: {{ section.settings.margin-bottom-1199 }}px;
-    }
-  }
-  @media screen and (max-width: 991px) {
-    .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding-top-991 }}px;
-      padding-bottom: {{ section.settings.padding-bottom-991 }}px;
-      margin-top: {{ section.settings.margin-top-991 }}px;
-      margin-bottom: {{ section.settings.margin-bottom-991 }}px;
-    }
-  }
-  @media screen and (max-width: 767px) {
-    .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding-top-767 }}px;
-      padding-bottom: {{ section.settings.padding-bottom-767 }}px;
-      margin-top: {{ section.settings.margin-top-767 }}px;
-      margin-bottom: {{ section.settings.margin-bottom-767 }}px;  
-    }
-  }
-  @media screen and (max-width: 575px) {
-    .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding-top-575 }}px;
-      padding-bottom: {{ section.settings.padding-bottom-575 }}px;
-      margin-top: {{ section.settings.margin-top-575 }}px;
-      margin-bottom: {{ section.settings.margin-bottom-575 }}px;  
-    }
-  }
-{%- endstyle -%}
-<div class="custom_section_wrapper">
-  <div class="section-{{ section.id }}-padding d-inline-block">
-    <div class="page-width">
-      {{ section.settings.custom_liquid }}
-    </div>
-  </div>
+<!-- sections/custom-liquid.liquid -->
+{{ 'section.css' | asset_url | stylesheet_tag }}
+{{ 'general-block.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign sid = section.id
+  assign se_stts = section.settings
+  assign se_blocks = section.blocks
+  assign stt_layout = se_stts.layout
+  assign stt_image_bg = se_stts.image_bg
+  if stt_layout == 't4s-se-container' 
+    assign html_layout = '<div class="t4s-container">__</div></div>' | split: '__'
+  elsif stt_layout == 't4s-container-wrap'
+    assign html_layout = '<div class="t4s-container">__</div>' | split: '__'
+  else
+    assign html_layout = '__' | split: '__'
+  endif
+
+  assign t4s_se_class = 't4s_nt_se_' | append: sid
+  if se_stts.use_cus_css and se_stts.code_cus_css != blank
+    render 'se_cus_css', code_cus_css: se_stts.code_cus_css, t4s_se_class: t4s_se_class
+  endif 
+ -%}
+
+<div class="t4s-section-inner t4s_nt_se_{{ sid }} t4s_se_{{ sid }} {{ stt_layout }}{% if stt_image_bg != blank and stt_layout != 't4s-se-container' %} t4s-has-imgbg lazyloadt4s{% endif %}" {% if stt_image_bg != blank and stt_layout != 't4s-se-container' %} data-bgset="{{ stt_image_bg | image_url: width: 1 }}" data-sizes="auto"  data-optimumx="2"{% endif %} {% render 'section_style', se_stts: se_stts -%} >
+    {{- html_layout[0] -}}
+    {%- if stt_layout == 't4s-se-container' -%}<div class="t4s-container-inner{% if stt_image_bg != blank %} t4s-has-imgbg lazyloadt4s{% endif %}" {% if stt_image_bg != blank %} data-bgset="{{ stt_image_bg | image_url: width: 1 }}" data-sizes="auto"  data-optimumx="2"{% endif %}>{% endif -%}
+    <div class="t4s-code__liquid" hdt-reveal="slide-in">{{ se_stts.custom_liquid }}</div>
+    {{- html_layout[1] -}}
 </div>
 
 {% schema %}
 {
-  "name": "t:sections.custom-liquid.name",
+  "name": "Custom Liquid",
   "tag": "section",
-  "class": "section",
+  "class": "t4s-section t4s-section-all t4s-custom-liquid",
   "settings": [
-    {
-      "type": "liquid",
-      "id": "custom_liquid",
-      "label": "t:sections.custom-liquid.settings.custom_liquid.label",
-      "info": "t:sections.custom-liquid.settings.custom_liquid.info"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.social_media_collage.settings.color_setting"
-    },
-    {
-      "type": "color",
-      "id": "section_bg",
-      "label": "t:sections.social_media_collage.settings.section_background",
-      "default": "#f3f3f3"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.all.padding.section_padding_heading"
-    },
-    {
-      "type": "number",
-      "id": "padding-top",
-      "label": "t:sections.all.padding.padding_top",
-      "default": 120
-    },
-    {
-      "type": "number",
-      "id": "padding-bottom",
-      "label": "t:sections.all.padding.padding_bottom",
-      "default": 120
-    },
-    {
-      "type": "header",
-      "content": "Screen wise section padding"
-    },
-    {
-      "type": "header",
-      "content": "@media screen 1429"
-    },
-    {
-      "type": "number",
-      "id": "padding-top-1429",
-      "label": "Padding top",
-      "default": 70
-    },
-    {
-      "type": "number",
-      "id": "padding-bottom-1429",
-      "label": "Padding bottom",
-      "default": 70
-    },
-    {
-      "type": "header",
-      "content": "@media screen 1199"
-    },
-    {
-      "type": "number",
-      "id": "padding-top-1199",
-      "label": "Padding top",
-      "default": 60
-    },
-    {
-      "type": "number",
-      "id": "padding-bottom-1199",
-      "label": "Padding bottom",
-      "default": 60
-    },
-    {
-      "type": "header",
-      "content": "@media screen 991"
-    },
-    {
-      "type": "number",
-      "id": "padding-top-991",
-      "label": "Padding top",
-      "default": 50
-    },
-    {
-      "type": "number",
-      "id": "padding-bottom-991",
-      "label": "Padding bottom",
-      "default": 50
-    },
-    {
-      "type": "header",
-      "content": "@media screen 767"
-    },
-    {
-      "type": "number",
-      "id": "padding-top-767",
-      "label": "Padding top",
-      "default": 40
-    },
-    {
-      "type": "number",
-      "id": "padding-bottom-767",
-      "label": "Padding bottom",
-      "default": 40
-    },
-    {
-      "type": "header",
-      "content": "@media screen 575"
-    },
-    {
-      "type": "number",
-      "id": "padding-top-575",
-      "label": "Padding top",
-      "default": 30
-    },
-    {
-      "type": "number",
-      "id": "padding-bottom-575",
-      "label": "Padding bottom",
-      "default": 30
-    },
-    {
-      "type": "header",
-      "content": "Margin settings"
-    },
-    {
-      "type": "number",
-      "id": "margin-top",
-      "label": "Margin top",
-      "default": 0
-    },
-    {
-      "type": "number",
-      "id": "margin-bottom",
-      "label": "Margin bottom",
-      "default": 0
-    },
-    {
-      "type": "header",
-      "content": "Screen wise section margin"
-    },
-    {
-      "type": "header",
-      "content": "@media screen 1429"
-    },
-    {
-      "type": "number",
-      "id": "margin-top-1429",
-      "label": "Margin top",
-      "default": 0
-    },
-    {
-      "type": "number",
-      "id": "margin-bottom-1429",
-      "label": "Margin bottom",
-      "default": 0
-    },
-    {
-      "type": "header",
-      "content": "@media screen 1199"
-    },
-    {
-      "type": "number",
-      "id": "margin-top-1199",
-      "label": "Margin top",
-      "default": 0
-    },
-    {
-      "type": "number",
-      "id": "margin-bottom-1199",
-      "label": "Margin bottom",
-      "default": 0
-    },
-    {
-      "type": "header",
-      "content": "@media screen 991"
-    },
-    {
-      "type": "number",
-      "id": "margin-top-991",
-      "label": "Margin top",
-      "default": 0
-    },
-    {
-      "type": "number",
-      "id": "margin-bottom-991",
-      "label": "Margin bottom",
-      "default": 0
-    },
-    {
-      "type": "header",
-      "content": "@media screen 767"
-    },
-    {
-      "type": "number",
-      "id": "margin-top-767",
-      "label": "Margin top",
-      "default": 0
-    },
-    {
-      "type": "number",
-      "id": "margin-bottom-767",
-      "label": "Margin bottom",
-      "default": 0
-    },
-    {
-      "type": "header",
-      "content": "@media screen 575"
-    },
-    {
-      "type": "number",
-      "id": "margin-top-575",
-      "label": "Margin top",
-      "default": 0
-    },
-    {
-      "type": "number",
-      "id": "margin-bottom-575",
-      "label": "Margin bottom",
-      "default": 0
-    }
+      {
+        "type": "header",
+        "content": "1. Code Liquid options"
+      },
+      {
+        "type": "paragraph",
+        "content": "This is an advanced section. Knowledge of web design languages such as LIQUID, HTML, CSS is required"
+      },
+      {
+        "type": "liquid",
+        "id": "custom_liquid",
+        "label": "Custom Liquid",
+        "info": "Add app snippets or other Liquid code to create advanced customizations."
+      },
+      {
+        "type": "header",
+        "content": "2. Design options"
+      },
+      {
+        "type": "select","id": "layout","default": "t4s-container-wrap","label": "Layout",
+        "options": [
+            { "value": "t4s-se-container", "label": "Container"},
+            { "value": "t4s-container-wrap", "label": "Wrapped container"},
+            { "value": "t4s-container-fluid", "label": "Full width"}
+        ]
+      },
+      {
+        "type": "color",
+        "id": "cl_bg",
+        "label": "Background"
+      },
+      {
+        "type": "color_background",
+        "id": "cl_bg_gradient",
+        "label": "Background gradient"
+      },
+      {
+        "type": "image_picker",
+        "id": "image_bg",
+        "label": "Background image"
+      },
+      {
+          "type": "text",
+          "id": "mg",
+          "label": "Margin",
+          "info":"Margin top, margin right, margin bottom, margin left. If you not use to blank",
+          "default": ",,50px,",
+          "placeholder": ",,50px,"
+      },
+      {
+          "type": "text",
+          "id": "pd",
+          "label": "Padding",
+          "info":"Padding top, padding right, padding bottom, padding left. If you not use to blank",
+          "placeholder": "50px,,50px,"
+      },
+      {
+        "type": "header",
+        "content": "+ Design Tablet Options"
+      },
+      {
+        "type": "text",
+        "id": "mg_tb",
+        "label": "Margin",
+        "placeholder": ",,50px,"
+      },
+      {
+        "type": "text",
+        "id": "pd_tb",
+        "label": "Padding",
+        "placeholder": ",,50px,"
+      }, 
+      {
+        "type": "header",
+        "content": "+ Design mobile options"
+      },
+      {
+          "type": "text",
+          "id": "mg_mb",
+          "label": "Margin",
+          "default": ",,30px,",
+          "placeholder": ",,50px,"
+      },
+      {
+          "type": "text",
+          "id": "pd_mb",
+          "label": "Padding",
+          "placeholder": ",,50px,"
+      }
   ],
   "presets": [
     {
-      "name": "t:sections.custom-liquid.presets.name"
+      "name": "Custom Liquid"
     }
   ]
 }

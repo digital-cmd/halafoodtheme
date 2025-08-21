@@ -1,0 +1,495 @@
+{%- comment -%}
+  Bundle Collection Manager - Multi-Bundle Support
+  Dynamically loads on any bundle collection page
+{%- endcomment -%}
+{%- liquid
+  assign show_bundle = false
+  assign bundle_config = nil
+  
+  # Check if we're on any bundle collection
+  if collection
+    case collection.handle
+      when 'bundle-1'
+        assign show_bundle = true
+        assign bundle_max_products = 10
+        assign bundle_price = 17.99
+        assign bundle_product_handle = 'spice-bundle-choose-any-10'
+      when 'bundle-5'
+        assign show_bundle = true
+        assign bundle_max_products = 5
+        assign bundle_price = 9.99
+        assign bundle_product_handle = 'spice-bundle-choose-any-5'
+      when 'bundle-15'
+        assign show_bundle = true
+        assign bundle_max_products = 15
+        assign bundle_price = 24.99
+        assign bundle_product_handle = 'spice-bundle-choose-any-15'
+    endcase
+  endif
+-%}
+{%- if show_bundle -%}
+<!-- Bundle Progress Bar -->
+<div class="bundle-progress-container">
+  <div class="bundle-progress-content">
+    <h2 class="bundle-progress-title">
+      <span class="en-text">🎁 Choose Any {{ bundle_max_products }} Products for €{{ bundle_price }}</span>
+      <span class="ar-text">🎁 اختر أي {{ bundle_max_products }} منتجات مقابل {{ bundle_price }} يورو</span>
+    </h2>
+    <div class="bundle-instructions">
+      <span class="en-text">👇 Click on products below to select them for your bundle</span>
+      <span class="ar-text">👇 انقر على المنتجات أدناه لاختيارها لباقتك</span>
+    </div>
+    <div class="bundle-progress-bar">
+      <div class="bundle-progress-fill"></div>
+      <span class="bundle-progress-text">
+        <span class="en-text">0/{{ bundle_max_products }} Selected</span>
+        <span class="ar-text">0/{{ bundle_max_products }} محدد</span>
+      </span>
+    </div>
+    <button class="bundle-add-to-cart" disabled>
+      <span class="en-text">Select {{ bundle_max_products }} Products</span>
+      <span class="ar-text">اختر {{ bundle_max_products }} منتجات</span>
+    </button>
+  </div>
+</div>
+
+<style>
+  /* Critical bundle overrides with high specificity */
+  body.bundle-collection-active .t4s-product a[href],
+  body.bundle-collection-active .t4s-product a,
+  body.bundle-collection-active .t4s-product button {
+    pointer-events: none !important;
+    cursor: default !important;
+  }
+  
+  body.bundle-collection-active .t4s-product.bundle-selectable,
+  body.bundle-collection-active .t4s-product.bundle-selectable * {
+    cursor: pointer !important;
+  }
+  
+  /* Hide prices and variants on bundle collection */
+  body.bundle-collection-active .t4s-product-price,
+  body.bundle-collection-active .t4s-product__price,
+  body.bundle-collection-active .price,
+  body.bundle-collection-active [class*="price"],
+  body.bundle-collection-active .t4s-price-item {
+    display: none !important;
+  }
+  body.bundle-collection-active .t4s-product-price,
+  body.bundle-collection-active .t4s-product__price,
+  body.bundle-collection-active .price,
+  body.bundle-collection-active [class*="price"],
+  body.bundle-collection-active .t4s-price-item {
+    display: none !important;
+  }
+  
+  /* Hide variant selectors */
+  body.bundle-collection-active .t4s-product-options,
+  body.bundle-collection-active .product-form__options,
+  body.bundle-collection-active select[name*="variant"],
+  body.bundle-collection-active .t4s-swatch-list {
+    display: none !important;
+  }
+  
+  /* Hide add to cart buttons and forms */
+  body.bundle-collection-active .t4s-product form,
+  body.bundle-collection-active .t4s-product form button[name="add"],
+  body.bundle-collection-active .t4s-product .t4s-btn-atc,
+  body.bundle-collection-active .t4s-product [data-action="add-to-cart"],
+  body.bundle-collection-active .product-form,
+  body.bundle-collection-active .t4s-product-form {
+    display: none !important;
+    pointer-events: none !important;
+  }
+  
+  /* Ensure products are clickable for bundle selection */
+  body.bundle-collection-active .t4s-product.bundle-selectable {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+  }
+  
+  /* Make the entire product card clickable */
+  body.bundle-collection-active .t4s-product.bundle-selectable * {
+    pointer-events: none !important;
+  }
+  
+  body.bundle-collection-active .t4s-product.bundle-selectable {
+    pointer-events: auto !important;
+  }
+  
+  /* Prevent any popup/modal triggers */
+  body.bundle-collection-active [data-quickview],
+  body.bundle-collection-active .quickview,
+  body.bundle-collection-active .quick-view,
+  body.bundle-collection-active .t4s-quickview-button,
+  body.bundle-collection-active [data-product-popup],
+  body.bundle-collection-active .product-popup,
+  body.bundle-collection-active [data-modal],
+  body.bundle-collection-active [data-toggle="modal"] {
+    display: none !important;
+    pointer-events: none !important;
+  }
+  
+  /* Enhanced Bundle Progress Styles */
+  .bundle-progress-container {
+    position: sticky;
+    top: 0;
+    background: linear-gradient(135deg, #437C30, #356625);
+    box-shadow: 0 8px 30px rgba(67, 124, 48, 0.3);
+    z-index: 50;
+    padding: 30px 0;
+    margin-bottom: 40px;
+    border-bottom: 4px solid #2d5220;
+  }
+  
+  /* Add custom background for different bundle types */
+  {%- case collection.handle -%}
+    {%- when 'bundle-5' -%}
+      .bundle-progress-container {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        border-bottom-color: #1f5f8b;
+      }
+    {%- when 'bundle-15' -%}
+      .bundle-progress-container {
+        background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        border-bottom-color: #6c3483;
+      }
+  {%- endcase -%}
+  
+  .bundle-progress-content {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 0 20px;
+  }
+  
+  .bundle-progress-title {
+    font-size: 36px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    animation: pulse-title 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-title {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+  
+  .bundle-instructions {
+    color: #e8f5e9;
+    font-size: 20px;
+    margin-bottom: 25px;
+    font-weight: 500;
+    animation: bounce 2s ease-in-out infinite;
+  }
+  
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  
+  .bundle-progress-bar {
+    background: rgba(255, 255, 255, 0.3);
+    height: 50px;
+    border-radius: 25px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 25px;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+  }
+  
+  .bundle-progress-fill {
+    background: linear-gradient(135deg, #ED6451, #d4503f);
+    height: 100%;
+    width: 0%;
+    transition: width 0.5s ease;
+    border-radius: 22px;
+    box-shadow: 0 0 20px rgba(237, 100, 81, 0.5);
+  }
+  
+  .bundle-progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    font-size: 20px;
+    color: white;
+    z-index: 1;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+  }
+  
+  .bundle-add-to-cart {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    padding: 20px 60px;
+    font-size: 22px;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: not-allowed;
+    transition: all 0.3s;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  }
+  
+  .bundle-add-to-cart.active {
+    background: linear-gradient(135deg, #ED6451, #d4503f);
+    cursor: pointer;
+    animation: pulse 2s infinite;
+    border-color: #ED6451;
+  }
+  
+  @keyframes pulse {
+    0% { 
+      transform: scale(1); 
+      box-shadow: 0 0 0 0 rgba(237, 100, 81, 0.7);
+    }
+    50% { 
+      transform: scale(1.05); 
+      box-shadow: 0 0 20px 10px rgba(237, 100, 81, 0);
+    }
+    100% { 
+      transform: scale(1); 
+      box-shadow: 0 0 0 0 rgba(237, 100, 81, 0);
+    }
+  }
+  
+  .bundle-add-to-cart.active:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 10px 35px rgba(237, 100, 81, 0.4);
+  }
+  
+  /* Product Selection Styles */
+  body.bundle-collection-active .t4s-product.bundle-selectable {
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  /* Disable all links and buttons inside bundle products */
+  body.bundle-collection-active .t4s-product.bundle-selectable a,
+  body.bundle-collection-active .t4s-product.bundle-selectable button {
+    pointer-events: none !important;
+    cursor: pointer !important;
+  }
+  
+  body.bundle-collection-active .t4s-product.bundle-selectable::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 3px solid transparent;
+    border-radius: 12px;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  body.bundle-collection-active .t4s-product.bundle-selectable:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(67, 124, 48, 0.2);
+  }
+  
+  body.bundle-collection-active .t4s-product.bundle-selectable:hover::before {
+    border-color: #437C30;
+  }
+  
+  /* Custom hover colors for different bundle types */
+  {%- case collection.handle -%}
+    {%- when 'bundle-5' -%}
+      body.bundle-collection-active .t4s-product.bundle-selectable:hover::before {
+        border-color: #3498db;
+      }
+      body.bundle-collection-active .t4s-product.bundle-selected::before {
+        border-color: #3498db;
+        background: rgba(52, 152, 219, 0.1);
+      }
+      body.bundle-collection-active .t4s-product.bundle-selected::after {
+        background: #3498db;
+      }
+    {%- when 'bundle-15' -%}
+      body.bundle-collection-active .t4s-product.bundle-selectable:hover::before {
+        border-color: #9b59b6;
+      }
+      body.bundle-collection-active .t4s-product.bundle-selected::before {
+        border-color: #9b59b6;
+        background: rgba(155, 89, 182, 0.1);
+      }
+      body.bundle-collection-active .t4s-product.bundle-selected::after {
+        background: #9b59b6;
+      }
+  {%- endcase -%}
+  
+  body.bundle-collection-active .t4s-product.bundle-selected {
+    transform: scale(0.95);
+    box-shadow: 0 0 30px rgba(67, 124, 48, 0.4);
+  }
+  
+  body.bundle-collection-active .t4s-product.bundle-selected::before {
+    border-color: #437C30;
+    background: rgba(67, 124, 48, 0.1);
+  }
+  
+  body.bundle-collection-active .t4s-product.bundle-selected::after {
+    content: '✓';
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #437C30;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 6px 15px rgba(67, 124, 48, 0.4);
+    animation: checkmark-pop 0.3s ease-out;
+  }
+  
+  @keyframes checkmark-pop {
+    0% { transform: scale(0) rotate(-180deg); }
+    50% { transform: scale(1.2) rotate(20deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  
+  /* RTL support */
+  html[dir="rtl"] body.bundle-collection-active .t4s-product.bundle-selected::after {
+    right: auto;
+    left: 15px;
+  }
+  
+  /* Language visibility */
+  .ar-text { display: none; }
+  html[lang*="ar"] .en-text { display: none; }
+  html[lang*="ar"] .ar-text { display: inline; }
+  
+  /* Bundle notification */
+  .bundle-notification {
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 16px;
+    z-index: 100;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    min-width: 300px;
+    text-align: center;
+    animation: slideUp 0.3s ease;
+  }
+  
+  @keyframes slideUp {
+    from { 
+      opacity: 0; 
+      transform: translate(-50%, 20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translate(-50%, 0); 
+    }
+  }
+  
+  .bundle-notification--success {
+    background: #437C30;
+  }
+  
+  .bundle-notification--error {
+    background: #ED6451;
+  }
+  
+  .bundle-notification--warning {
+    background: #f39c12;
+  }
+  
+  .bundle-notification--info {
+    background: #3498db;
+  }
+  
+  /* Loading spinner */
+  .loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Block any modal/popup overlays */
+  body.bundle-collection-active .modal,
+  body.bundle-collection-active .modal-backdrop,
+  body.bundle-collection-active .t4s-modal,
+  body.bundle-collection-active .t4s-popup,
+  body.bundle-collection-active .product-modal,
+  body.bundle-collection-active .quickview-modal,
+  body.bundle-collection-active [class*="popup"],
+  body.bundle-collection-active [class*="modal"] {
+    display: none !important;
+    z-index: -1 !important;
+  }
+  
+  /* Mobile adjustments */
+  @media (max-width: 768px) {
+    .bundle-progress-container {
+      padding: 20px 0;
+    }
+    
+    .bundle-progress-title {
+      font-size: 24px;
+    }
+    
+    .bundle-instructions {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .bundle-progress-bar {
+      height: 40px;
+    }
+    
+    .bundle-progress-text {
+      font-size: 16px;
+    }
+    
+    .bundle-add-to-cart {
+      font-size: 18px;
+      padding: 16px 40px;
+    }
+    
+    body.bundle-collection-active .t4s-product.bundle-selected::after {
+      width: 40px;
+      height: 40px;
+      font-size: 22px;
+      top: 10px;
+      right: 10px;
+    }
+    
+    html[dir="rtl"] body.bundle-collection-active .t4s-product.bundle-selected::after {
+      right: auto;
+      left: 10px;
+    }
+  }
+</style>
+
+<!-- Load the bundle manager script -->
+<script src="{{ 'bundle-collection-manager.js' | asset_url }}" defer></script>
+{%- endif -%}
