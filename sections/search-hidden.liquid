@@ -30,7 +30,26 @@
      endif
    endif
  -%}
-
+{%- comment -%} Adjust results count to exclude gift items {%- endcomment -%}
+{%- if search.performed -%}
+  {%- liquid
+    assign gift_collection = collections['free-gifts-collection']
+    assign gift_items_to_exclude = 0
+    
+    if gift_collection and gift_collection.products.size > 0
+      assign gift_product_ids = gift_collection.products | map: 'id'
+      for result in search.results
+        if result.object_type == 'product' and gift_product_ids contains result.id
+          assign gift_items_to_exclude = gift_items_to_exclude | plus: 1
+        elsif result.object_type == 'collection' and result.handle == 'free-gifts-collection'
+          assign gift_items_to_exclude = gift_items_to_exclude | plus: 1
+        endif
+      endfor
+    endif
+    
+    assign results_count = results_count | minus: gift_items_to_exclude
+  -%}
+{%- endif -%}
 {%- if request.design_mode -%}
   <link rel="stylesheet" href="{{ 'search-hidden.css' | asset_url }}" media="all">
 {%- endif -%}
@@ -50,13 +69,51 @@
  -%}
 
   {%- if predictive_search != blank -%}
-    {%- assign results_count = predictive_search.resources.queries.size
-      | plus: predictive_search.resources.products.size
-      | plus: predictive_search.resources.collections.size
-      | plus: predictive_search.resources.pages.size
-      | plus: predictive_search.resources.articles.size
-    -%}
-  {%- endif -%}
+  {%- comment -%} Filter out gift collection from predictive search collections {%- endcomment -%}
+  {%- assign filtered_collections = blank -%}
+  {%- assign filtered_collections_array = blank -%}
+  {%- for collection in predictive_search.resources.collections -%}
+    {%- unless collection.handle == 'free-gifts-collection' -%}
+      {%- if filtered_collections_array == blank -%}
+        {%- assign filtered_collections_array = collection.id -%}
+      {%- else -%}
+        {%- assign filtered_collections_array = filtered_collections_array | append: ',' | append: collection.id -%}
+      {%- endif -%}
+    {%- endunless -%}
+  {%- endfor -%}
+  {%- assign filtered_collections_count = filtered_collections_array | split: ',' | size -%}
+  {%- if filtered_collections_array == blank -%}{%- assign filtered_collections_count = 0 -%}{%- endif -%}
+  
+  {%- comment -%} Filter out gift products from predictive search products {%- endcomment -%}
+  {%- liquid
+    assign gift_collection = collections['free-gifts-collection']
+    assign gift_product_ids = gift_collection.products | map: 'id'
+    assign filtered_products_array = blank
+    
+    for product in predictive_search.resources.products
+      unless gift_product_ids contains product.id
+        if filtered_products_array == blank
+          assign filtered_products_array = product.id
+        else
+          assign filtered_products_array = filtered_products_array | append: ',' | append: product.id
+        endif
+      endunless
+    endfor
+    
+    assign filtered_products_count = filtered_products_array | split: ',' | size
+    if filtered_products_array == blank
+      assign filtered_products_count = 0
+    endif
+  -%}
+  
+  {%- comment -%} Update results count to exclude gift items {%- endcomment -%}
+  {%- assign results_count = predictive_search.resources.queries.size
+    | plus: filtered_products_count
+    | plus: filtered_collections_count
+    | plus: predictive_search.resources.pages.size
+    | plus: predictive_search.resources.articles.size
+  -%}
+{%- endif -%}
   
   <div class="t4s-drawer__header">
     <span class="is--login" aria-hidden="false">{{ 'search.general.title' | t }}</span>
@@ -137,16 +194,34 @@
           </div>
           {%- endfor -%}
         </div>
-        <div data-results-search class="t4s-mini-search__content t4s_ratioadapt">
-          {%- if results_count == 0 -%}{{ 'search.general.no_product_results' | t }}
-          {%- elsif results_count > 0 -%}
+        <div data-results-search class="t4s-frm-search__content t4s_ratioadapt t4s-current-scrollbar"{% if collection == blank or show_search_suggest == false %} style="display: none;"{% endif %}>
+          {%- if predictive_search != blank -%}
+            {%- comment -%} Display filtered predictive search products {%- endcomment -%}
+            {%- liquid
+              assign gift_collection = collections['free-gifts-collection']
+              assign gift_product_ids = gift_collection.products | map: 'id'
+            -%}
             {%- for product in predictive_search.resources.products limit: limit -%}
-              {%- render 'pr-sidebar-loop', imgatt: "", product: product, pr_url: product.url, placeholder_img: placeholder_img, price_varies_style: price_varies_style -%} 
+              {%- unless gift_product_ids contains product.id -%}
+                {%- render 'pr-sidebar-loop', imgatt: "", product: product, pr_url: product.url, placeholder_img: placeholder_img, price_varies_style: price_varies_style -%}
+              {%- endunless -%}
             {%- endfor -%}
-
-          {%- elsif predictive_search == blank and collection != blank and show_search_suggest -%}
+            
+            {%- comment -%} Display filtered predictive search collections {%- endcomment -%}
+            {%- for collection in predictive_search.resources.collections -%}
+              {%- unless collection.handle == 'free-gifts-collection' -%}
+                {%- comment -%} Add collection display if needed {%- endcomment -%}
+              {%- endunless -%}
+            {%- endfor -%}
+          {%- elsif collection != blank and show_search_suggest -%}
+            {%- liquid
+              assign gift_collection = collections['free-gifts-collection']
+              assign gift_product_ids = gift_collection.products | map: 'id'
+            -%}
             {%- for product in collection.products limit: limit -%}
-              {%- render 'pr-sidebar-loop', imgatt: "", product: product, pr_url: product.url, placeholder_img: placeholder_img, price_varies_style: price_varies_style -%} 
+              {%- unless gift_product_ids contains product.id -%}
+                {%- render 'pr-sidebar-loop', imgatt: "", product: product, pr_url: product.url, placeholder_img: placeholder_img, price_varies_style: price_varies_style -%}
+              {%- endunless -%}
             {%- endfor -%}
           {%- endif -%}
           {%- unless settings.only_search_prs %}<div class="t4s-results-others t4s_ratioadapt lazyloadt4s" data-rendert4s='{{ routes.search_url }}?q={{ arr_terms[1] }}&type=article,page&section_id=search-others'></div>{% endunless -%}
@@ -241,13 +316,32 @@
         <div data-results-search class="t4s-mini-search__content t4s_ratioadapt">
           {%- if results_count == 0 -%}{{ 'search.general.no_product_results' | t }}
           {%- elsif results_count > 0 -%}
-            {%- for product in search.results limit: limit -%}
-              {%- render 'pr-sidebar-loop', imgatt: "", product: product, pr_url: product.url, placeholder_img: placeholder_img, price_varies_style: price_varies_style -%} 
+            {%- comment -%} Filter gift products from regular search results {%- endcomment -%}
+            {%- liquid
+              assign gift_collection = collections['free-gifts-collection']
+              assign gift_product_ids = gift_collection.products | map: 'id'
+            -%}
+            {%- for result in search.results limit: limit -%}
+              {%- if result.object_type == 'product' -%}
+                {%- unless gift_product_ids contains result.id -%}
+                  {%- render 'pr-sidebar-loop', imgatt: "", product: result, pr_url: result.url, placeholder_img: placeholder_img, price_varies_style: price_varies_style -%}
+                {%- endunless -%}
+              {%- elsif result.object_type == 'collection' -%}
+                {%- unless result.handle == 'free-gifts-collection' -%}
+                  {%- comment -%} Add collection display if needed {%- endcomment -%}
+                {%- endunless -%}
+              {%- endif -%}
             {%- endfor -%}
 
           {%- elsif predictive_search == blank and collection != blank and show_search_suggest -%}
+            {%- liquid
+              assign gift_collection = collections['free-gifts-collection']
+              assign gift_product_ids = gift_collection.products | map: 'id'
+            -%}
             {%- for product in collection.products limit: limit -%}
-              {%- render 'pr-sidebar-loop', imgatt: "", product: product, pr_url: product.url, placeholder_img: placeholder_img, price_varies_style: price_varies_style -%} 
+              {%- unless gift_product_ids contains product.id -%}
+                {%- render 'pr-sidebar-loop', imgatt: "", product: product, pr_url: product.url, placeholder_img: placeholder_img, price_varies_style: price_varies_style -%}
+              {%- endunless -%}
             {%- endfor -%}
           {%- endif -%}
           {%- unless settings.only_search_prs %}<div class="t4s-results-others t4s_ratioadapt lazyloadt4s" data-rendert4s='{{ routes.search_url }}?q={{ search.terms | url_encode }}&type=article,page&section_id=search-others'></div>{% endunless -%}

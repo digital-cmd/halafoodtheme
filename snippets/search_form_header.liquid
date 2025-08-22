@@ -197,8 +197,14 @@
       </div>
       <div data-results-search class="t4s-frm-search__content t4s_ratioadapt t4s-current-scrollbar"{% if collection == blank or show_search_suggest == false %} style="display: none;"{% endif %}>
         {%- if collection != blank and show_search_suggest -%}
+          {%- liquid
+            assign gift_collection = collections['free-gifts-collection']
+            assign gift_product_ids = gift_collection.products | map: 'id'
+          -%}
           {%- for product in collection.products limit: limit -%}
-            {%- render 'pr-sidebar-loop', imgatt: "", product: product, pr_url: product.url, placeholder_img: placeholder_img, price_varies_style: price_varies_style -%}
+            {%- unless gift_product_ids contains product.id -%}
+              {%- render 'pr-sidebar-loop', imgatt: "", product: product, pr_url: product.url, placeholder_img: placeholder_img, price_varies_style: price_varies_style -%}
+            {%- endunless -%}
           {%- endfor -%}
         {%- endif -%}
       </div>

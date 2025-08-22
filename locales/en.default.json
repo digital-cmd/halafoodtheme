@@ -472,6 +472,23 @@
       "recurring_mess": "Recurring Delivery every {{ frequency }} {{ frequency_unit }}. Change or cancel anytime",
       "agree_checkout": "You must agree with the terms and conditions of sales to check out."
     },
+      "free_products": {
+    "title": "Choose {{ count }} FREE Products",
+    "subtitle": "Select any {{ count }} items below - completely free!",
+    "selected": "selected",
+    "add_button": "Add FREE Products",
+    "skip_button": "Skip",
+    "loading": "Loading free products...",
+    "adding": "Adding...",
+    "limit_reached": "You can only select {{ count }} free products!",
+    "success": "Free products added to cart! 🎉",
+    "error": "Error adding products. Please try again.",
+    "empty_title": "No Free Products Available",
+    "empty_message": "Sorry, there are currently no free products available for selection.",
+    "error_title": "Error Loading Products",
+    "error_message": "There was an error loading the free products. Please try again later.",
+    "close": "Close"
+  },
     "tool": {
       "save": "Save",
       "cancel": "Cancel",

@@ -507,6 +507,11 @@
         </template>  
     </div>
    {%- endif -%}
+   <script>
+console.log('🔍 Testing asset URLs:');
+console.log('CSS URL: {{ "cart-free-product-popup.css" | asset_url }}');
+console.log('JS URL: {{ "cart-free-product-popup.js" | asset_url }}');
+</script>
 
 </div>
 
