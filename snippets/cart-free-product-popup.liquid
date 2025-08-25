@@ -5,18 +5,9 @@ Languages: Arabic (default), English, German
 {%- endcomment -%}
 
 {%- liquid
-  assign is_cart_page = false
-  if template.name == 'cart' or request.page_type == 'cart'
-    assign is_cart_page = true
-  endif
-  
   assign cart_threshold = 5000
   assign max_free_products = 1
   assign free_products_collection = 'free-gifts-collection'
-  
-  unless is_cart_page
-    break
-  endunless
 -%}
 
 {%- comment -%} Configuration Script with Translations {%- endcomment -%}
@@ -65,18 +56,9 @@ Usage: {% render 'cart-free-product-popup' %}
 {%- endcomment -%}
 
 {%- liquid
-  assign is_cart_page = false
-  if template.name == 'cart' or request.page_type == 'cart'
-    assign is_cart_page = true
-  endif
-  
   assign cart_threshold = 5000
   assign max_free_products = 1
   assign free_products_collection = 'free-gifts-collection'
-  
-  unless is_cart_page
-    break
-  endunless
 -%}
 
 {%- comment -%} Configuration Script {%- endcomment -%}

@@ -9,7 +9,10 @@
     // Configuration from window object
     const CONFIG = window.HALA_QUANTITY_CONFIG || {
         collections: [
-            { handle: '0-99', maxQuantity: 1, message: 'Limited to 1 per customer!' }
+            { handle: '0-99', maxQuantity: 1, message: 'Limited to 1 per customer!' },
+            { handle: 'free-gifts-collection', maxQuantity: 1, message: 'Limited to 1 per customer!' },
+            { handle: 'angebote', maxQuantity: 1, message: 'Limited to 1 per customer!' },
+            { handle: '1-1', maxQuantity: 1, message: 'Limited to 1 per customer!' },
         ],
         defaultMessages: {
             alreadyMax: 'You have reached the maximum limit for this product!',

@@ -87,14 +87,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </script>
 
     <meta name="google-site-verification" content="rk5nnqYHpcemHgn7U4AS8KeE2HlSLdsw7MZmwv4kefw" />
-    <!-- Hala Food Quantity Limiter Configuration with Translations -->
 <script>
   // CONFIGURE YOUR COLLECTIONS AND LIMITS HERE
   window.HALA_QUANTITY_CONFIG = {
     collections: [
       {
-        handle: '0-99',           // Collection handle
-        maxQuantity: 1,           // Max quantity per product
+        handle: '0-99',
+        maxQuantity: 1,
         message: 'يمكنك اضافة قطعة واحدة فقط من كل منتج في هذا العرض' // Custom message
       },
       // Add more collections here as needed:
@@ -113,11 +112,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         maxQuantity: 3,
         message: 'يمكنك اضافة قطعة واحدة فقط من كل منتج في هذا العرض' // Custom message
       },
-      // {
-      //   handle: 'clearance',
-      //   maxQuantity: 3,
-      //   message: 'Maximum 3 items per customer for clearance products!'
-      // }
+      // 🎁 ADD FREE GIFTS COLLECTION
+      {
+        handle: 'free-gifts-collection',
+        maxQuantity: 1,
+        message: 'هدية مجانية - قطعة واحدة فقط لكل عميل' // Free gift - one per customer only
+      },
+      {
+        handle: 'angebote',
+        maxQuantity: 1,
+        message: 'هدية مجانية - قطعة واحدة فقط لكل عميل' // Free gift - one per customer only
+      },
+      {
+        handle: '1-1',
+        maxQuantity: 1,
+        message: 'هدية مجانية - قطعة واحدة فقط لكل عميل' // Free gift - one per customer only
+      }
     ],
     
     // Default messages (used if collection doesn't have custom message)
@@ -131,8 +141,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   // Preload collection products for faster performance
   window.HALA_COLLECTION_PRODUCTS = {};
   
-  {%- for collection_config in collections -%}
-    {%- assign collection_handle = collection_config.handle -%}
+  // 🔧 FIXED: Iterate over the configured collections, not all Shopify collections
+  {%- assign configured_collections = '0-99,max1,max2,max3,free-gifts-collection,angebote,1-1' | split: ',' -%}
+  {%- for collection_handle in configured_collections -%}
     {%- assign collection = collections[collection_handle] -%}
     {%- if collection -%}
       window.HALA_COLLECTION_PRODUCTS['{{ collection_handle }}'] = [
@@ -143,11 +154,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           }{%- unless forloop.last -%},{%- endunless -%}
         {%- endfor -%}
       ];
+    {%- else -%}
+      console.warn('HALA: Collection "{{ collection_handle }}" not found');
     {%- endif -%}
   {%- endfor -%}
   
   // Current cart data
   window.SHOPIFY_CART_DATA = {{ cart | json }};
+  
+  console.log('🎁 HALA Config loaded with collections:', Object.keys(window.HALA_COLLECTION_PRODUCTS));
 </script>
 
 <!-- Load the Hala Food Quantity Limiter Script -->
@@ -376,7 +391,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   })();
 })();
 </script>
-
+{% render 'auto-free-sample' %}
   </body>
 </html>
 

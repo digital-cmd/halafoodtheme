@@ -7,12 +7,6 @@
 (function() {
     'use strict';
     
-    // Early exit if not on cart page for performance
-    if (!window.location.pathname.includes('/cart') && 
-        !document.body.classList.contains('template-cart')) {
-        return;
-    }
-    
     // Prevent multiple initializations
     if (window._cartFreeProductInitialized) {
         return;
@@ -104,6 +98,12 @@
         
         // Periodic check as fallback
         state.checkTimer = setInterval(checkCartThreshold, CONFIG.checkInterval);
+
+        document.addEventListener('click', function(e) {
+    if (e.target.closest('[data-open-drawer="mini_cart"], [data-cart-toggle], .t4s-pr-item-cart')) {
+        setTimeout(checkCartThreshold, 500);
+    }
+});
     }
     
     /**
@@ -143,24 +143,38 @@
      * Check if cart meets threshold
      */
     async function checkCartThreshold() {
-        if (state.isLoading || state.isActive || state.hasShownPopup) {
+    if (state.isLoading || state.isActive || state.hasShownPopup) {
+        return;
+    }
+    
+    try {
+        const cartData = await getCartData();
+        state.currentCartTotal = cartData.total_price;
+        
+        // Check if user already has ANY free gift from the free-gifts-collection
+        const hasFreeGift = cartData.items.some(item => 
+            item.properties && (
+                item.properties['_free_product'] === 'true' ||
+                item.properties['_free_product'] === true
+            )
+        );
+        
+        if (hasFreeGift) {
+            console.log('🎁 User already has a free gift, skipping popup');
+            markAsCompleted(); // Prevent popup from showing again
             return;
         }
         
-        try {
-            const cartData = await getCartData();
-            state.currentCartTotal = cartData.total_price;
-            
-            console.log(`Cart total: ${cartData.total_price}, Threshold: ${CONFIG.cartThreshold}`);
-            
-            if (cartData.total_price >= CONFIG.cartThreshold) {
-                console.log('🎉 Cart threshold reached! Showing free product popup...');
-                showFreeProductPopup();
-            }
-        } catch (error) {
-            console.error('Error checking cart threshold:', error);
+        console.log(`Cart total: ${cartData.total_price}, Threshold: ${CONFIG.cartThreshold}`);
+        
+        if (cartData.total_price >= CONFIG.cartThreshold) {
+            console.log('🎉 Cart threshold reached! Showing free product popup...');
+            showFreeProductPopup();
         }
+    } catch (error) {
+        console.error('Error checking cart threshold:', error);
     }
+}
     
     /**
      * Get cart data efficiently
@@ -618,50 +632,69 @@
      * Add selected products to cart
      */
     async function addSelectedProducts() {
-        if (state.selectedProducts.size !== CONFIG.maxFreeProducts) {
+    if (state.selectedProducts.size !== CONFIG.maxFreeProducts) {
+        return;
+    }
+    
+    // Check one more time if user already has a free gift
+    try {
+        const cartData = await getCartData();
+        const hasFreeGift = cartData.items.some(item => 
+            item.properties && (
+                item.properties['_free_product'] === 'true' ||
+                item.properties['_free_product'] === true
+            )
+        );
+        
+        if (hasFreeGift) {
+            showNotification('You already have a free gift in your cart!', 'warning');
+            markAsCompleted();
+            closePopup();
             return;
         }
-        
-        // Update button state
-        elements.addButton.innerHTML = `
-            <div class="cart-free-loading-spinner" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block;"></div>
-            ${getTranslation('adding', 'Adding...')}
-        `;
-        elements.addButton.disabled = true;
-        
-        try {
-            const selectedData = Array.from(state.selectedProducts).map(index => 
-                state.productData.get(index)
-            );
-            
-            // Add products to cart
-            for (const productData of selectedData) {
-                await addProductToCart(productData);
-            }
-            
-            showNotification(getTranslation('success', 'Free products added to cart! 🎉'), 'success');
-            
-            // Mark as completed when products are successfully added
-            markAsCompleted();
-            
-            // Close popup after success
-            setTimeout(() => {
-                closePopup();
-                // Refresh cart data
-                if (window.location.reload) {
-                    window.location.reload();
-                }
-            }, 1500);
-            
-        } catch (error) {
-            console.error('Error adding products:', error);
-            showNotification(getTranslation('error', 'Error adding products. Please try again.'), 'error');
-            
-            // Reset button
-            elements.addButton.innerHTML = getTranslation('add_button', 'Add FREE Products');
-            elements.addButton.disabled = false;
-        }
+    } catch (error) {
+        console.error('Error checking cart before adding:', error);
     }
+    
+    // Update button state
+    elements.addButton.innerHTML = `
+        <div class="cart-free-loading-spinner" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block;"></div>
+        ${getTranslation('adding', 'Adding...')}
+    `;
+    elements.addButton.disabled = true;
+    
+    try {
+        const selectedData = Array.from(state.selectedProducts).map(index => 
+            state.productData.get(index)
+        );
+        
+        // Add products to cart - but only add the first one to enforce collection limit
+        const productData = selectedData[0]; // Only add 1 product from collection
+        await addProductToCart(productData);
+        
+        showNotification(getTranslation('success', 'Free product added to cart! 🎉'), 'success');
+        
+        // Mark as completed when products are successfully added
+        markAsCompleted();
+        
+        // Close popup after success
+        setTimeout(() => {
+            closePopup();
+            // Refresh cart data
+            if (window.location.reload) {
+                window.location.reload();
+            }
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Error adding products:', error);
+        showNotification(getTranslation('error', 'Error adding product. Please try again.'), 'error');
+        
+        // Reset button
+        elements.addButton.innerHTML = getTranslation('add_button', 'Add FREE Products');
+        elements.addButton.disabled = false;
+    }
+}
     
     /**
      * Add single product to cart
