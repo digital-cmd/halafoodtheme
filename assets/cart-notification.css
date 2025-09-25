@@ -1,0 +1,176 @@
+/* cart-notification.css - Clean version for T4S themes */
+
+/* Theme Color Variables */
+:root {
+  --cart-notification-primary: #4CAF50;
+  --cart-notification-bg: #ffffff;
+  --cart-notification-text: #333333;
+  --cart-notification-border: #4CAF50;
+  --cart-notification-shadow: rgba(0, 0, 0, 0.2);
+}
+
+/* Dark theme support */
+[data-theme="dark"] {
+  --cart-notification-primary: #66BB6A;
+  --cart-notification-bg: #1a1a1a;
+  --cart-notification-text: #ffffff;
+  --cart-notification-border: #66BB6A;
+  --cart-notification-shadow: rgba(255, 255, 255, 0.1);
+}
+
+/* Hide T4S Mini Cart */
+#t4s-mini_cart,
+.t4s-drawer[data-cart-wrapper],
+.t4s-drawer__right[aria-hidden="false"] {
+  display: none !important;
+  visibility: hidden !important;
+  transform: translateX(100%) !important;
+}
+
+/* Ensure mini cart stays hidden even when T4S tries to show it */
+#t4s-mini_cart.t4s-drawer-opened,
+.t4s-drawer.t4s-is-open {
+  display: none !important;
+}
+
+/* Prevent body scroll lock */
+body.t4s-drawer-opened,
+body.t4s-mini-cart-open,
+body.cart-drawer-open {
+  overflow: auto !important;
+  position: static !important;
+}
+
+/* Hide cart drawer backdrop and overlays */
+.t4s-drawer-backdrop,
+.t4s-backdrop,
+.drawer-backdrop,
+.t4s-close-overlay,
+.cart-overlay,
+.drawer-overlay,
+.modal-backdrop,
+#modalOverlay,
+.overlay,
+.t4s-overlay,
+div[class*="backdrop"],
+div[class*="overlay"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+
+/* Popup Container */
+.cart-notification-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  background: var(--cart-notification-bg);
+  border: 2px solid var(--cart-notification-border);
+  border-radius: 12px;
+  padding: 30px 40px;
+  box-shadow: 0 10px 30px var(--cart-notification-shadow);
+  z-index: 999999;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  text-align: center;
+  min-width: 300px;
+  max-width: 90%;
+  pointer-events: none;
+}
+
+.cart-notification-popup.show {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Content Container */
+.notification-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Text Styling */
+.notification-text {
+  margin: 0;
+  font-size: 16px;
+  color: var(--cart-notification-text);
+  font-weight: 500;
+  line-height: 1.5;
+  font-family: inherit;
+}
+
+/* RTL Support for Arabic */
+html[lang="ar"] .notification-text,
+html[dir="rtl"] .notification-text {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Animated Checkmark */
+.checkmark {
+  width: 56px;
+  height: 56px;
+}
+
+.checkmark-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 2;
+  stroke-miterlimit: 10;
+  stroke: var(--cart-notification-primary);
+  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark-check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  stroke-width: 2;
+  stroke: var(--cart-notification-primary);
+  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.3s forwards;
+}
+
+@keyframes stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .cart-notification-popup {
+    padding: 20px 25px;
+    min-width: 250px;
+    max-width: 85%;
+  }
+  
+  .notification-text {
+    font-size: 14px;
+  }
+  
+  .checkmark {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-notification-popup {
+    padding: 15px 20px;
+    min-width: 200px;
+  }
+  
+  .notification-text {
+    font-size: 13px;
+  }
+  
+  .checkmark {
+    width: 36px;
+    height: 36px;
+  }
+}
