@@ -1,0 +1,461 @@
+{%- liquid 
+assign pr_url = product.url
+assign pid = product.id
+assign isDefault = product.has_only_default_variant
+assign pr_variants = product.variants
+assign current_variant = pr_variants.first
+assign isPreoder = false
+
+if product.tags contains 'isPreoder' or current_variant.inventory_policy == 'continue' and current_variant.inventory_management == 'shopify' and current_variant.inventory_quantity <= 0
+   assign isPreoder = true
+endif
+
+if current_variant.inventory_management == 'shopify'
+   assign max_qty = current_variant.inventory_quantity | default: 9999
+else
+   assign max_qty = 9999
+endif
+if current_variant.quantity_rule.max and max_qty > current_variant.quantity_rule.max
+   assign max_qty = current_variant.quantity_rule.max
+endif
+
+assign is_hala_offer_product = false
+for collection in product.collections
+  if collection.handle == '1-1'
+    assign is_hala_offer_product = true
+    assign max_qty = 1
+    break
+  endif
+endfor
+
+assign meta_theme = product.metafields.theme
+assign cus_qty = meta_theme.cus_qty | default: 1
+if current_variant.quantity_rule.min and cus_qty < current_variant.quantity_rule.min
+  assign cus_qty          = current_variant.quantity_rule.min
+endif
+assign isExternal = false
+assign external_title = meta_theme.external_title 
+assign external_link = meta_theme.external_link
+if external_title != blank and external_link != blank 
+   assign isExternal = true 
+endif
+assign isGrouped = false 
+
+assign custom_badge = meta_theme.custom_badge
+if custom_badge != blank
+   assign arr_badge = custom_badge | replace: '  ', '' | replace: ' ;', ';' | replace: '; ', ';' | split: ';' | join: 'nt-t4s' | escape | split: 'nt-t4s'
+   assign arr_badge_handle = arr_badge | join: 'nt-t4s' | handle | split: 'nt-t4s'
+else
+   assign badge_tags = product.tags | where: "badge_"
+   if badge_tags.size > 0
+      assign arr_badge_tags   = badge_tags | join: 'nt-t4s' | remove: 'badge_' | escape
+      assign arr_badge        = arr_badge_tags | split: 'nt-t4s'
+      assign arr_badge_handle = arr_badge_tags | handle | split: 'nt-t4s'
+   endif
+endif
+
+assign countdown = time_meta | default: meta_theme.countdown | date: '%Y/%m/%d %H:%M:%S'
+unless placeholder_img
+   assign placeholder_img = settings.placeholder_img
+endunless
+assign image = product.featured_media | default: placeholder_img
+
+assign color_count = 0
+assign size_count = 0
+
+if isDefault == false and enable_pr_color or enable_pr_size
+   assign pr_options = product.options_with_values
+   
+   assign img_variants = pr_variants | where: "featured_image"
+   assign available_variants = product.variants | where: "available"
+   for option in pr_options
+      assign name = option.name | downcase
+
+      if enable_pr_color and get_color contains name and color_count == 0
+
+        assign pr_option_color = 'option' | append: forloop.index
+        assign color_variants_avai = available_variants | map: pr_option_color | uniq
+        assign featured_imgs = img_variants | map: 'featured_image'
+        
+        assign color_variants = option.values
+        if show_cl_type == '1'
+          assign color_count = color_variants.size
+        else
+          assign color_count = color_variants_avai.size
+        endif
+       
+
+      elsif enable_pr_size and get_size contains name and size_count == 0
+
+        assign pr_option_size = 'option' | append: forloop.index 
+        assign size_variants_avai = available_variants | map: pr_option_size | uniq
+        assign size_variants = option.values
+        if show_size_type == '1'
+          assign size_count = size_variants.size
+        else
+          if pr_options.size == 1
+            assign size_variants = size_variants_avai
+          endif
+          assign size_count = size_variants_avai.size
+        endif
+
+      endif
+
+   endfor
+endif -%}
+
+<div class="t4s-product t4s-pr-grid t4s-pr-style1 t4s-pr-{{ pid }} {{ col }} t4s-col-item{% if is_hala_offer_product %} hala-offer-product-card{% endif %}" data-product-options='{ "id":"{{ pid }}","cusQty":"{{ cus_qty }}","available":{{ product.available }}, "handle":"{{ product.handle }}", "isDefault": {{ isDefault }}, "VariantFirstID": {{ current_variant.id }}, "customBadge":{{ arr_badge | json }}, "customBadgeHandle":{{ arr_badge_handle | json }},"dateStart":{{ product.created_at | date: "%s" }}, "compare_at_price":{{ current_variant.compare_at_price | json }},"price":{{ current_variant.price | json }}, "isPreoder":{{ isPreoder }},"isExternal":{{ isExternal }}{% if isExternal %},"external_title":{{ external_title | json }},"external_link":"{{ external_link | escape }}"{% endif %},"image2":{% if product.media[1] != blank %}{{ product.media[1] | image_url: width: 1 | json }},"alt":{{ product.media[1].alt | escape | json }}{% else %}false{% endif %},"isGrouped":{{ isGrouped }},"maxQuantity":{% if isDefault and isPreoder == false %}{{ max_qty }}{% else %}9999{% endif %},"isHalaOffer":{{ is_hala_offer_product }} }' data-product-id="{{ pid }}">
+  <div class="t4s-product-wrapper" timeline hdt-reveal="slide-in">
+    <div data-cacl-slide class="t4s-product-inner t4s-pr t4s-oh">
+      {%- comment -%} HALA FOOD - Offer Product Badge {%- endcomment -%}
+      {% if is_hala_offer_product %}
+        <div class="hala-offer-badge-grid">⚡ {{ 'hala_food.offer.badge_grid' | t | default: 'Limited Offer' }}</div>
+      {% endif %}
+      
+      {%- if image.media_type == 'video' -%}
+            {% render 'product-img-with-video', video: image, imgatt: imgatt %}
+         {%- else -%}
+            {% render 'product-img', image: image, imgatt: imgatt %}
+         {%- endif -%}
+
+{%- comment -%} Country Flag Display - COMPLETE VERSION WITH ALL MAPPINGS {%- endcomment -%}
+{%- assign herkunft = product.metafields.custom.herkunft | strip -%}
+
+{%- if herkunft != blank -%}
+  {%- comment -%} Check if Arabic text {%- endcomment -%}
+  {%- if herkunft contains 'ا' or herkunft contains 'ل' or herkunft contains 'ت' or herkunft contains 'س' or herkunft contains 'أ' or herkunft contains 'و' or herkunft contains 'ي' or herkunft contains 'ه' or herkunft contains 'ر' or herkunft contains 'ن' or herkunft contains 'د' or herkunft contains 'ك' -%}
+    {%- assign country_check = herkunft -%}
+  {%- else -%}
+    {%- assign country_check = herkunft | downcase -%}
+  {%- endif -%}
+  
+  {%- comment -%} COMPLETE MAPPING TO YOUR ACTUAL FILE NAMES {%- endcomment -%}
+  {%- case country_check -%}
+    
+    {%- comment -%} === ARABIC EXACT MATCH === {%- endcomment -%}
+    {%- when 'سوريا' or 'سورية' -%}
+      {%- assign country_file = 'syria' -%}
+    {%- when 'الأردن' -%}
+      {%- assign country_file = 'jordan' -%}
+    {%- when 'تركيا' -%}
+      {%- assign country_file = 'turkey' -%}
+    {%- when 'الأرجنتين' -%}
+      {%- assign country_file = 'argentina' -%}
+    {%- when 'أوكرانيا' or 'اوكرانيا' -%}
+      {%- assign country_file = 'ukraine' -%}
+    {%- when 'الهند' -%}
+      {%- assign country_file = 'india' -%}
+    
+    {%- comment -%} === T COUNTRIES === {%- endcomment -%}
+    {%- when 'türkei' or 'tuerkei' or 'turkey' or 'türkiye' or 'turkiye' or 'truthahn' -%}
+      {%- assign country_file = 'turkey' -%}
+    {%- when 'tunesien' or 'tunisia' or 'tunesisch' -%}
+      {%- assign country_file = 'tunisia' -%}
+    {%- when 'thailand' -%}
+      {%- assign country_file = 'thailand' -%}
+    
+    {%- comment -%} === L COUNTRIES === {%- endcomment -%}
+    {%- when 'libanon' or 'lebanon' -%}
+      {%- assign country_file = 'lebanon' -%}
+    {%- when 'libyen' or 'libya' -%}
+      {%- assign country_file = 'libya' -%}
+    
+    {%- comment -%} === U COUNTRIES === {%- endcomment -%}
+    {%- when 'uae' or 'u.a.e' or 'vae' or 'vereinigte arabische emirate' -%}
+      {%- assign country_file = 'uae' -%}
+    {%- when 'ungarn' or 'hungary' -%}
+      {%- assign country_file = 'hungary' -%}
+    {%- when 'usa' or 'amerika' or 'america' -%}
+      {%- assign country_file = 'usa' -%}
+    {%- when 'ukraine' -%}
+      {%- assign country_file = 'ukraine' -%}
+    
+    {%- comment -%} === J COUNTRIES === {%- endcomment -%}
+    {%- when 'jordanien' or 'jordan' or 'jordanisch' -%}
+      {%- assign country_file = 'jordan' -%}
+    {%- when 'jemen' or 'yemen' -%}
+      {%- assign country_file = 'yemen' -%}
+    
+    {%- comment -%} === A COUNTRIES === {%- endcomment -%}
+    {%- when 'ägypten' or 'aegypten' or 'egypt' -%}
+      {%- assign country_file = 'egypt' -%}
+    {%- when 'algerien' or 'algeria' -%}
+      {%- assign country_file = 'algeria' -%}
+    {%- when 'afghanistan' -%}
+      {%- assign country_file = 'afghanistan' -%}
+    {%- when 'argentinien' or 'argentina' -%}
+      {%- assign country_file = 'argentina' -%}
+    {%- when 'australien' or 'australia' -%}
+      {%- assign country_file = 'australia' -%}
+    {%- when 'aleppo' -%}
+      {%- assign country_file = 'syria' -%}
+    
+    {%- comment -%} === S COUNTRIES === {%- endcomment -%}
+    {%- when 'syrien' or 'syria' or 'syrisch' -%}
+      {%- assign country_file = 'syria' -%}
+    {%- when 'saudi arabien' or 'saudi arabia' or 'saudi-arabien' -%}
+      {%- assign country_file = 'saudi-arabia' -%}
+    {%- when 'schweiz' or 'switzerland' -%}
+      {%- assign country_file = 'switzerland' -%}
+    {%- when 'serbien' or 'serbia' or 'serbisch' -%}
+      {%- assign country_file = 'serbia' -%}
+    {%- when 'sri lanka' -%}
+      {%- assign country_file = 'srilanka' -%}
+    {%- when 'sudan' -%}
+      {%- assign country_file = 'sudan' -%}
+    {%- when 'südsudan' or 'suedsudan' or 'south sudan' -%}
+      {%- assign country_file = 'south-sudan' -%}
+    {%- when 'somalia' -%}
+      {%- assign country_file = 'somalia' -%}
+    
+    {%- comment -%} === E COUNTRIES === {%- endcomment -%}
+    {%- when 'england' or 'eng' or 'uk' -%}
+      {%- assign country_file = 'england' -%}
+    
+    {%- comment -%} === I COUNTRIES === {%- endcomment -%}
+    {%- when 'italien' or 'italy' or 'italia' or 'italienisch' -%}
+      {%- assign country_file = 'italy.' -%}
+    {%- when 'indien' or 'india' or 'indisch' -%}
+      {%- assign country_file = 'india' -%}
+    {%- when 'indonesien' or 'indonesia' -%}
+      {%- assign country_file = 'indonesia' -%}
+    {%- when 'irak' or 'iraq' -%}
+      {%- assign country_file = 'iraq' -%}
+    {%- when 'iran' -%}
+      {%- assign country_file = 'iran' -%}
+    
+    {%- comment -%} === D COUNTRIES === {%- endcomment -%}
+    {%- when 'deutschland' or 'germany' or 'de' -%}
+      {%- assign country_file = 'germany' -%}
+    {%- when 'dänemark' or 'daenemark' or 'denmark' -%}
+      {%- assign country_file = 'denmark' -%}
+    {%- when 'dschibuti' or 'djibouti' -%}
+      {%- assign country_file = 'djibouti' -%}
+    
+    {%- comment -%} === O COUNTRIES === {%- endcomment -%}
+    {%- when 'österreich' or 'oesterreich' or 'austria' -%}
+      {%- assign country_file = 'austria' -%}
+    {%- when 'oman' -%}
+      {%- assign country_file = 'oman' -%}
+    
+    {%- comment -%} === P COUNTRIES === {%- endcomment -%}
+    {%- when 'pakistan' -%}
+      {%- assign country_file = 'Pakistan' -%}  {%- comment -%} CAPITAL P! {%- endcomment -%}
+    {%- when 'palästina' or 'palaestina' or 'palestine' -%}
+      {%- assign country_file = 'palestine' -%}
+    
+    {%- comment -%} === F COUNTRIES === {%- endcomment -%}
+    {%- when 'frankreich' or 'france' or 'fränkisch' or 'fraenkisch' -%}
+      {%- assign country_file = 'france' -%}
+    
+    {%- comment -%} === N COUNTRIES === {%- endcomment -%}
+    {%- when 'niederlande' or 'netherlands' or 'holland' -%}
+      {%- assign country_file = 'netherlands' -%}
+    
+    {%- comment -%} === C COUNTRIES === {%- endcomment -%}
+    {%- when 'chile' -%}
+      {%- assign country_file = 'chile' -%}
+    {%- when 'comoros' or 'komoren' -%}
+      {%- assign country_file = 'comoros' -%}
+    
+    {%- comment -%} === K/Q COUNTRIES === {%- endcomment -%}
+    {%- when 'katar' or 'qatar' -%}
+      {%- assign country_file = 'qatar' -%}
+    {%- when 'kuwait' -%}
+      {%- assign country_file = 'kuwait' -%}
+    
+    {%- comment -%} === B COUNTRIES === {%- endcomment -%}
+    {%- when 'bahrain' -%}
+      {%- assign country_file = 'bahrain' -%}
+    
+    {%- comment -%} === M COUNTRIES === {%- endcomment -%}
+    {%- when 'marokko' or 'morocco' -%}
+      {%- assign country_file = 'morocco' -%}
+    {%- when 'mauretanien' or 'mauritanien' or 'mauritania' -%}
+      {%- assign country_file = 'mauritania' -%}
+    
+    {%- comment -%} === W COUNTRIES === {%- endcomment -%}
+    {%- when 'westsahara' or 'western sahara' or 'western-sahara' -%}
+      {%- assign country_file = 'western-sahara' -%}
+    
+    {%- else -%}
+      {%- if herkunft contains 'ا' or herkunft contains 'ل' or herkunft contains 'أ' -%}
+        {%- assign country_file = '' -%}
+      {%- else -%}
+        {%- assign country_file = country_check | replace: ' ', '-' | replace: 'ä', 'ae' | replace: 'ö', 'oe' | replace: 'ü', 'ue' -%}
+      {%- endif -%}
+  {%- endcase -%}
+  
+  {%- if country_file != '' -%}
+    {%- comment -%} Try all file variations {%- endcomment -%}
+    {%- assign flag_found = false -%}
+    
+    {%- comment -%} Special case for Italy with period {%- endcomment -%}
+    {%- if country_file == 'italy' -%}
+      {%- assign flag_filename = 'flag-italy.WEBP' -%}
+      {%- assign flag_url = flag_filename | file_url -%}
+      {%- if flag_url != blank and flag_url != '' -%}
+        {%- assign flag_found = true -%}
+      {%- endif -%}
+    {%- endif -%}
+    
+    {%- comment -%} Try .webp lowercase {%- endcomment -%}
+    {%- unless flag_found -%}
+      {%- assign flag_filename = 'flag-' | append: country_file | append: '.webp' -%}
+      {%- assign flag_url = flag_filename | file_url -%}
+      {%- if flag_url != blank and flag_url != '' -%}
+        {%- assign flag_found = true -%}
+      {%- endif -%}
+    {%- endunless -%}
+    
+    {%- comment -%} Try .WEBP uppercase {%- endcomment -%}
+    {%- unless flag_found -%}
+      {%- assign flag_filename = 'flag-' | append: country_file | append: '.WEBP' -%}
+      {%- assign flag_url = flag_filename | file_url -%}
+      {%- if flag_url != blank and flag_url != '' -%}
+        {%- assign flag_found = true -%}
+      {%- endif -%}
+    {%- endunless -%}
+    
+    {%- comment -%} Try .png lowercase {%- endcomment -%}
+    {%- unless flag_found -%}
+      {%- assign flag_filename = 'flag-' | append: country_file | append: '.png' -%}
+      {%- assign flag_url = flag_filename | file_url -%}
+      {%- if flag_url != blank and flag_url != '' -%}
+        {%- assign flag_found = true -%}
+      {%- endif -%}
+    {%- endunless -%}
+    
+    {%- comment -%} Try .PNG uppercase {%- endcomment -%}
+    {%- unless flag_found -%}
+      {%- assign flag_filename = 'flag-' | append: country_file | append: '.PNG' -%}
+      {%- assign flag_url = flag_filename | file_url -%}
+      {%- if flag_url != blank and flag_url != '' -%}
+        {%- assign flag_found = true -%}
+      {%- endif -%}
+    {%- endunless -%}
+    
+    {%- comment -%} Display flag {%- endcomment -%}
+    {%- if flag_found -%}
+      <div class="t4s-country-flag" data-country="{{ herkunft }}">
+        <img class="t4s-flag-img" 
+             src="{{ flag_url }}" 
+             alt="{{ herkunft }} flag" 
+             width="24"
+             height="16"
+             loading="lazy"
+             data-flag-country="{{ country_file }}">
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+{%- endif -%}
+    <div data-product-badge data-sort="sale,new,soldout,preOrder,custom" class="t4s-product-badge"></div>
+      <div class="t4s-product-btns">
+         <div data-replace-quickview></div>
+         <div data-replace-atc data-has-qty></div>
+      </div>
+      <div class="t4s-product-btns2">
+         {%- if isGrowaveWishlist -%} 
+            {%- capture the_snippet_fave_icon %}{% render 'ssw-widget-faveicon' with pid %}{% endcapture -%}
+            {%- unless the_snippet_fave_icon contains 'Liquid error' -%}<div class="t4s-pr-item-btn t4s-pr-wishlist is--growave">{{ the_snippet_fave_icon }}</div>{%- endunless -%}
+         {%- else -%}<div data-replace-wishlist data-tooltip="right"></div>
+         {%- endif -%}
+         <div data-replace-compare data-tooltip="right"></div>
+      </div>
+      {%- if use_countdown and countdown != blank %}{%- render 'product-countdown', countdown: countdown %}{% endif -%}
+      <a data-pr-href class="t4s-full-width-link" href="{{ pr_url }}"></a>
+    </div>
+    <div class="t4s-product-info">
+      
+      <div class="t4s-product-info__inner">
+        <h3 style="margin: 0; font-weight: bold;">
+        {%- render 'product-price', product: product, price_varies_style: price_varies_style, type: 'card', isGrouped: isGrouped -%}
+        </h3>
+         {%- if product.vendor.size > 0 and show_vendor -%}{% if use_link_vendor %}{% assign pr_vendor_handle = product.vendor | handle %}{% assign collection_vendor = collections[pr_vendor_handle] %}{% endif %}<div class="t4s-product-vendor"><a href="{% if use_link_vendor and collection_vendor.url != blank %}{{ collection_vendor.url }}{% else %}{{ product.vendor | url_for_vendor }}{% endif %}">{{ product.vendor }}</a></div>{%- endif -%}
+                  {% if product.vendor != blank %}
+          <div class="t4s-product-vendor">
+            <span class="vendor-text">{{ product.vendor }}</span>
+          </div>
+        {% endif %}
+         <h3 class="t4s-product-title"><a data-pr-href href="{{ pr_url }}">{{ product.title }}</a></h3>
+{%- comment -%} Show only SIZE/WEIGHT product options {%- endcomment -%}
+{%- if pr_options.size > 0 -%}
+  {%- assign size_options_found = false -%}
+  {%- capture size_options_html -%}
+    {%- for option in pr_options -%}
+      {%- assign option_name_lower = option.name | downcase -%}
+      
+      {%- comment -%} Check if this is a size/weight option {%- endcomment -%}
+      {%- if option_name_lower contains 'size' 
+         or option_name_lower contains 'größe' 
+         or option_name_lower contains 'groesse'
+         or option_name_lower contains 'weight' 
+         or option_name_lower contains 'gewicht'
+         or option_name_lower contains 'menge'
+         or option_name_lower contains 'inhalt'
+         or option_name_lower contains 'volume'
+         or option_name_lower contains 'capacity'
+         or option_name_lower contains 'gram'
+         or option_name_lower contains 'liter'
+         or option_name_lower contains 'ml'
+         or option_name_lower contains 'kg'
+         or option_name_lower contains 'g'
+         or option_name_lower contains 'stück'
+         or option_name_lower contains 'stuck'
+         or option_name_lower contains 'stueck'
+         or option.name contains 'الحجم'
+         or option.name contains 'حجم'
+         or option.name contains 'الوزن'
+         or option.name contains 'وزن'
+         or option.name contains 'الكمية'
+         or option.name contains 'كمية'
+         or option.name contains 'قطعة'
+         or option.name contains 'القطعة'
+         or option.name contains 'مرجحة' -%}
+        
+        {%- assign size_options_found = true -%}
+        {%- for value in option.values -%}
+          <span>{{ value }}</span>
+        {%- endfor -%}
+        
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+  
+  {%- if size_options_found -%}
+    <div class="t4s-product-sizes" style="font-size: 10px;">
+      <span class="t4s-truncate">
+        {{ size_options_html }}
+      </span>
+    </div>
+  {%- endif -%}
+{%- endif -%}
+         
+         {%- if enable_rating %}{%- render 'product-rating', product: product, app_review: app_review -%}{% endif -%}
+         
+         {%- comment -%} HALA FOOD - Offer Product Indicator {%- endcomment -%}
+         {% if is_hala_offer_product %}
+           <div class="hala-offer-indicator-grid">
+             ⚡ {{ 'hala_food.offer.indicator' | t | default: 'Offer Item - Limited to 1' }}
+           </div>
+         {% endif %}
+         
+        {%- if show_list_btns -%}
+         {%- assign description_excerpt = product.metafields.theme.description_excerpt -%}
+         <div class="t4s-rte">{% if description_excerpt != blank %}{{ description_excerpt }}{% else %}{{ product.content | strip_html | truncatewords: 30 }}{% endif %}</div>
+        {%- endif -%}
+        {%- if color_count > 0 -%}
+        {%- assign values_swatch = color_variants | map: 'swatch' -%}
+        <div class="t4s-product-colors" data-color-options='{ "color_count":{{ color_count }}, "color_variants":{{ color_variants | join: 'nt-t4s' | escape | split: 'nt-t4s' | json }}{%- if values_swatch.size > 0 %},"colors_swatch":{{ values_swatch | map: 'color' | json }},"images_swatch":{{ values_swatch | map: 'image' | json }}{% endif %}, "color_variants_avai":{{ color_variants_avai | join: 'nt-t4s' | escape | split: 'nt-t4s' | json }}, "color_variants_handle":{{ color_variants | join: ' nt-t4s ' | handle | split: '-nt-t4s-' | json }}, "img_variants":{{ featured_imgs | json }}, "id_variants":{{ img_variants | map: 'id' | json }}, "img_ratios":{{ featured_imgs | map: 'aspect_ratio' | json }}, "img_options":{{ img_variants | map: pr_option_color | join: 'nt-t4s' | escape | split: 'nt-t4s' | json }} }'><span class="t4s-pr-color__item"><span class="t4s-pr-color__value bg_color_ntloading"></span></span><span class="t4s-pr-color__item"><span class="t4s-pr-color__value bg_color_ntloading"></span></span><span class="t4s-pr-color__item"><span class="t4s-pr-color__value bg_color_ntloading"></span></span></div>{% endif -%}
+          {%- if size_count > 0 and pr_size_pos == '2' %}{%- render 'product-size', size_variants: size_variants, size_variants_avai: size_variants_avai, show_size_type: show_size_type -%}{% endif -%}
+        </div>
+      {%- if show_list_btns -%}
+        <div class="t4s-product-btns t4s-product-info__btns">
+           {%- if settings.enable_quickview %}<a data-id="{{ pid }}" href="{{ pr_url }}" data-tooltip rel="nofollow" class="t4s-pr-item-btn t4s-pr-quickview" data-action-quickview><span class="t4s-svg-pr-icon"><svg viewBox="0 0 24 24"><use xlink:href="#t4s-icon-qv"></use></svg></span><span class="t4s-text-pr">{{ 'products.product_card.quick_view' | t }}</span></a>{% endif %}
+           {%- if settings.enable_atc %}{%- render 'product-atc', pr_available: product.available, pr_url: pr_url, isDefault: isDefault, isPreoder: isPreoder, isExternal: isExternal, external_title: external_title, external_link: external_link, isGrouped: isGrouped, current_variant: current_variant, pid: pid, cus_qty: cus_qty, max_qty: max_qty -%}{% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  {{- append_stock -}}
+</div>

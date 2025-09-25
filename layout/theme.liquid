@@ -1,0 +1,423 @@
+{%- unless template.suffix == 'a-configs' and request.design_mode == false -%}
+
+<!doctype html>
+{%- liquid
+  assign t_name     = request.page_type
+  assign iso_code   = request.locale.iso_code
+  assign use_rtl    = settings.use_rtl
+  if use_rtl == '3'
+    assign lis_rtl  = 'ar; dv; ha; he; ku; fa; ur; ug; ps; yi'
+    assign iso_code_ck = iso_code | split: '-' | first
+  else 
+    assign lis_rtl = settings.list_rtl
+    assign iso_code_ck = iso_code
+  endif
+  if use_rtl == '1'
+    assign isRTL = true
+  elsif lis_rtl contains iso_code_ck and use_rtl == '2' or use_rtl == '3'
+    assign isRTL = true
+  else
+    assign isRTL = false
+  endif
+  assign body_img = settings.body_bg_image
+  if body_img != blank and settings.general_layout == 'boxed'
+    assign class_lazy = 'lazyloadt4s'
+  endif -%}
+{%- capture class_html -%}
+t4sp-theme t4s-wrapper__{{ settings.general_layout }}{% if settings.animations_reveal_on_scroll %} hdt-reveal-in-view{% endif %} rtl_{{ isRTL }} swatch_color_style_{{ settings.swatch_color_style }} pr_border_style_{{ settings.pr_border_style }} pr_img_effect_{{ settings.pr_img_effect }} enable_eff_img1_{{ settings.enable_eff_img1 }} badge_shape_{{ settings.badge_shape }} css_for_wis_app_{{ settings.enable_css_wis }}{% if settings.use_cus_lz and settings.cus_lz %} t4s-lzcus-true{% endif %} shadow_round_img_{{ settings.enable_shadow_round_img }} t4s-header__{{ settings.header_design }} is-remove-unavai-{{ settings.variant_remove }} t4_compare_{{ settings.enable_compe }}{% if settings.type_qv == '1' %} t4s-sidebar-qv{% endif %} t4s-cart-count-{{ cart.item_count }} t4s-pr-ellipsis-{{ settings.enable_pr_ellipsis }}
+{%- endcapture -%}
+<html class="{{ class_html }} no-js" lang="{{ iso_code }}"{% if isRTL %} dir="rtl"{% endif %}>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, height=device-height, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="theme-color" content="{{ settings.body_bg }}">
+    <link rel="canonical" href="{{ canonical_url }}">
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+    <!-- Google Tag Manager -->
+    
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8HXVLZ5');</script>
+    <!-- End Google Tag Manager -->
+    {{ 'cart-notification.css' | asset_url | stylesheet_tag }}
+    
+    {%- if settings.favicon != blank %}<link rel="shortcut icon" type="image/png" href="{{ settings.favicon | image_url: width: 32 }}">{% endif -%}
+    {%- if settings.favicon_apple != blank %}<link rel="apple-touch-icon-precomposed" type="image/png" sizes="152x152" href="{{ settings.favicon_apple | image_url: width: 152 }}">{% endif -%}
+
+    {%- if settings.font_source == '1' and settings.fnt_fm_sp1.system? == false or settings.fnt_fm_sp2.system? == false or settings.fnt_fm_sp3.system? == false -%}
+      <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+    {%- endif -%}
+    
+    {%- if t_name != 'list-collections' -%}
+    {%- capture seo_title -%}
+      {%- if template == 'search' and search.performed == true -%}{{ 'search.general.heading' | t: count: search.results_count }}: {{ 'search.results_with_count_and_term' | t: terms: search.terms, count: search.results_count }}{%- elsif template == 'search.wishlist' %}{{ 'wishlist_page.meta' | t }}{%- elsif template == 'search.compare' %}{{ 'compare_page.meta' | t }}{%- else -%}{{ page_title }}{%- endif -%}
+      {%- if current_tags -%}{%- assign meta_tags = current_tags | join: ', ' %} &ndash; {{ 'general.meta.tags' | t: tags: meta_tags -}}{%- endif -%}
+      {%- if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{%- endif -%}
+      {%- assign escaped_page_title = page_title | escape -%}
+      {%- unless escaped_page_title contains shop.name %} &ndash; {{ shop.name }}{%- endunless -%}
+    {%- endcapture -%}
+    <title>{{ seo_title | strip }}</title>
+    <meta name="description" content="{{ page_description | default: shop.description | default: shop.name | escape }}">
+    {%- else -%}
+    <title>{{ 'list_collections.meta_title' | t | escape }}</title><meta name="description" content="{{ 'list_collections.meta_description' | t | escape }}">
+    {%- comment -%} HALAFOOD CUSTOM COLLECTION DESCRIPTIONS {%- endcomment -%}
+{%- if collection -%}
+  {%- assign collection_handle = collection.handle -%}
+  {%- case collection_handle -%}
+    {%- when 'reis-couscous-bulgur' -%}
+      <meta name="description" content="Shop authentic Middle Eastern rice, couscous, and bulgur wheat. Premium grains for traditional Arabic cooking. Fast EU delivery.">
+    {%- when 'backzutaten' -%}
+      <meta name="description" content="Premium baking ingredients for Middle Eastern desserts. Flour, yeast, rose water for authentic Arabic baking.">
+    {%- when 'arabische-und-nahostliche' -%}
+      <meta name="description" content="Authentic Arabic and Middle Eastern groceries online. Spices, and traditional foods. European delivery.">
+    {%- when 'angebote-fur-halal-produkte' -%}
+      <meta name="description" content="Special offers on all products. Save on authentic Middle Eastern groceries. Weekly deals and discounts.">
+    {%- when 'premium-products' -%}
+      <meta name="description" content="Discover premium arabic food products. Carefully selected high-quality items from trusted brands.">
+  {%- endcase -%}
+{%- endif -%}
+    {%- endif -%}
+
+    {%- render 'meta-tags', t_name: t_name -%}
+    
+    <script src="{{ 'lazysizes.min.js' | asset_url }}" async="async"></script>
+    <script src="{{ 'global.min.js' | asset_url }}" defer="defer"></script>
+    {{ content_for_header }}
+    {%- render 'head_assets', t_name: t_name, isRTL: isRTL -%}
+      <script>
+        const isHalafoodApp = navigator.userAgent.toLowerCase().includes('halafoodapp');
+        document.documentElement.classList.add(
+          isHalafoodApp ? 'halafood-app' : 'halafood-browser'
+        );
+      </script>
+
+    <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "qm55sjclr4");
+</script>
+
+    <meta name="google-site-verification" content="rk5nnqYHpcemHgn7U4AS8KeE2HlSLdsw7MZmwv4kefw" />
+<script>
+  // CONFIGURE YOUR COLLECTIONS AND LIMITS HERE
+  window.HALA_QUANTITY_CONFIG = {
+    collections: [
+      // Add more collections here as needed:
+      {
+        handle: 'max1',
+        maxQuantity: 1,
+        message: 'يمكنك اضافة قطعة واحدة فقط من كل منتج في هذا العرض' // Custom message
+      },
+      {
+        handle: 'max2',
+        maxQuantity: 2,
+        message: 'يمكنك اضافة قطعة واحدة فقط من كل منتج في هذا العرض' // Custom message
+      },
+      {
+        handle: 'max3',
+        maxQuantity: 3,
+        message: 'يمكنك اضافة قطعة واحدة فقط من كل منتج في هذا العرض' // Custom message
+      },
+      {
+        handle: 'e-angebot',
+        maxQuantity: 1,
+        message: 'يمكنك اضافة قطعة واحدة فقط من كل منتج في هذا العرض' // Custom message
+      },
+      // 🎁 ADD FREE GIFTS COLLECTION
+      {
+        handle: 'free-gifts-collection',
+        maxQuantity: 1,
+        message: 'هدية مجانية - قطعة واحدة فقط لكل عميل' // Free gift - one per customer only
+      },
+      {
+        handle: '1-1',
+        maxQuantity: 1,
+        message: 'هدية مجانية - قطعة واحدة فقط لكل عميل' // Free gift - one per customer only
+      },
+      {
+        handle: 'free-samples',
+        maxQuantity: 1,
+        message: 'هدية مجانية - قطعة واحدة فقط لكل عميل' // Free gift - one per customer only
+      }
+    ],
+    
+    // Default messages (used if collection doesn't have custom message)
+    defaultMessages: {
+      alreadyMax: 'لقد وصلت إلى الحد الأقصى لهذا المنتج!',
+      limitReached: 'الحد الأقصى: {max} قطعة لكل عميل',
+      addedToCart: 'تمت الإضافة إلى السلة'
+    }
+  };
+  
+  // Preload collection products for faster performance
+  window.HALA_COLLECTION_PRODUCTS = {};
+  
+  // 🔧 FIXED: Iterate over the configured collections, not all Shopify collections
+  {%- assign configured_collections = 'max1,max2,max3,free-gifts-collection,angebote,1-1' | split: ',' -%}
+  {%- for collection_handle in configured_collections -%}
+    {%- assign collection = collections[collection_handle] -%}
+    {%- if collection -%}
+      window.HALA_COLLECTION_PRODUCTS['{{ collection_handle }}'] = [
+        {%- for product in collection.products limit: 250 -%}
+          {
+            id: {{ product.id }},
+            handle: '{{ product.handle }}'
+          }{%- unless forloop.last -%},{%- endunless -%}
+        {%- endfor -%}
+      ];
+    {%- else -%}
+      console.warn('HALA: Collection "{{ collection_handle }}" not found');
+    {%- endif -%}
+  {%- endfor -%}
+  
+  // Current cart data
+  window.SHOPIFY_CART_DATA = {{ cart | json }};
+  
+  console.log('🎁 HALA Config loaded with collections:', Object.keys(window.HALA_COLLECTION_PRODUCTS));
+</script>
+
+<!-- Load the Hala Food Quantity Limiter Script -->
+{{ 'quantity-limiter.js' | asset_url | script_tag }}
+
+<!-- HALA FOOD - Hide offer product visual indicators -->
+<style>
+/* Hide offer product visual indicators */
+.hala-offer-product-card {
+    border: none !important;
+    background: none !important;
+}
+
+.hala-offer-product-form {
+    border: none !important;
+    background: none !important;
+    padding: 20px !important;
+}
+
+.hala-offer-product-form::before {
+    display: none !important;
+}
+
+/* Hide all badges and indicators */
+.hala-offer-badge-grid,
+.hala-offer-indicator-grid,
+.hala-offer-badge,
+.hala-offer-indicator,
+.hala-offer-indicator-cart,
+.hala-offer-qty-notice {
+    display: none !important;
+}
+
+/* For offer products in popup/quickview */
+.hala-offer-product-form .t4s-product-form__qty,
+.hala-offer-product-form .hala-quantity-wrapper,
+.hala-offer-product-form [data-replace-wishlist],
+.hala-offer-product-form .t4s-pr-wishlist,
+.hala-offer-product-form .t4s_wis_cp {
+    display: none !important;
+}
+
+/* Hide quantity controls for offer items in cart */
+.hala-offer-cart-item .t4s-quantity-wrapper,
+.hala-offer-cart-item .hala-cart-quantity {
+    display: none !important;
+}
+
+/* Remove offer item styling in cart */
+.hala-offer-cart-item {
+    border-left: none !important;
+    background: none !important;
+}
+</style>
+
+{% if template contains 'collection' and current_page > 1 %}
+  <meta name="robots" content="noindex,follow">
+{% endif %}
+
+
+  </head>
+
+  <body class="template-{{ request.page_type | handle }} {{ class_lazy }}"{% if body_img != blank %} data-bgset="{{ body_img | image_url: width: 1 }}" data-optimumx="2" data-sizes="auto"{% endif -%}>{% if isRTL %}<script type="text/javascript" id="t4s-flicker-fix">// Flicker fix.</script>{% endif -%}
+    <a class="skip-to-content-link visually-hidden" href="#MainContent">{{ "accessibility.skip_to_text" | t }}</a>
+    <div class="t4s-close-overlay t4s-op-0"></div>
+
+    <div class="t4s-website-wrapper">
+      {%- render 'header', t_name: t_name -%}
+
+      <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
+        {{ content_for_layout }}
+      </main>
+
+      <footer id="t4s-footer">
+        {%- section 'footer' -%}
+        {%- section 'bottom-bar' -%}
+      </footer>
+    </div>
+
+      <ul hidden class="t4s-d-none">
+        <li id="a11y-refresh-page-message">{{ 'accessibility.refresh_page' | t }}</li>
+      </ul>
+    {%- liquid
+      render 'render_bottom'
+      render 'structured-data'
+    -%}
+      <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8HXVLZ5"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+{{ 'gift-collection-filter.js' | asset_url | script_tag }}
+<script id="hala-lang-persist">
+(function(){
+  // --- config ---
+  var PRIMARY   = "ar";                   // Arabic = default, no prefix
+  var SUPPORTED = ["ar","en","de"];
+  var KEY       = "hala_lang";            // localStorage key
+
+  // --- storage helpers (LS + cookie fallback) ---
+  function getSaved(){
+    try { return localStorage.getItem(KEY); } catch(e){ return null; }
+  }
+  function setSaved(lang){
+    if (SUPPORTED.indexOf(lang) === -1) return;
+    try { localStorage.setItem(KEY, lang); } catch(e){}
+    try { document.cookie = "preferred_locale="+encodeURIComponent(lang)+";path=/;max-age=31536000;SameSite=Lax"; } catch(e){}
+  }
+
+  // --- URL helpers ---
+  function normalizeHost(h){ return (h||"").replace(/^www\./i,"").toLowerCase(); }
+  function isSameShop(href){
+    try{
+      var u = new URL(href, location.origin);
+      return normalizeHost(u.hostname) === normalizeHost(location.hostname);
+    }catch(e){ return false; }
+  }
+  function firstSeg(path){ var s=(path||"").split("/").filter(Boolean); return (s[0]||"").toLowerCase(); }
+  function detectFromPath(path){
+    var seg = firstSeg(path);
+    return SUPPORTED.indexOf(seg) !== -1 ? seg : PRIMARY;
+  }
+  function localizeUrl(href, lang){
+    if (!isSameShop(href)) return href;
+    var u = new URL(href, location.origin);
+    var segs = u.pathname.split("/").filter(Boolean);
+    if (segs.length && SUPPORTED.indexOf(segs[0]) !== -1) segs.shift();   // drop existing locale
+    if (lang !== PRIMARY) segs.unshift(lang);                              // add prefix unless primary
+    u.pathname = "/"+segs.join("/");
+    return u.toString();
+  }
+  function shouldIgnore(href){
+    try{
+      var u = new URL(href, location.origin);
+      var p = u.pathname.toLowerCase();
+      if (normalizeHost(u.hostname) !== normalizeHost(location.hostname)) return true; // external
+      if (p.startsWith("/admin") || p.startsWith("/apps") || p.startsWith("/a/") ||
+          p.startsWith("/localization") || p.endsWith(".json")) return true;
+      return false;
+    }catch(e){ return true; }
+  }
+
+  var current = detectFromPath(location.pathname);
+  var saved   = getSaved();
+  var active  = saved || current; // use saved if present, else use current page language
+
+  // If user already chose a language and URL doesn't match it → redirect once
+  if (saved && saved !== current) {
+    var target = localizeUrl(location.href, saved);
+    if (target !== location.href) { location.replace(target); return; }
+  }
+
+  // --- 1) Kalles header-inline language buttons (what you pasted) ---
+  //     Buttons look like: .t4s-lang-item[data-iso], [data-locale-item][data-iso]
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest('.t4s-lang-item[data-iso], [data-locale-item][data-iso]');
+    if (!btn) return;
+    var iso = (btn.getAttribute("data-iso")||"").toLowerCase();
+    if (SUPPORTED.indexOf(iso) === -1) return;
+
+    // remember immediately so the *next* page load doesn't revert to AR
+    setSaved(iso);
+
+    // Let theme do its own switch; if it doesn't navigate, do it for it.
+    setTimeout(function(){
+      if (detectFromPath(location.pathname) !== iso) {
+        location.href = localizeUrl(location.href, iso);
+      }
+    }, 400);
+  }, true);
+
+  // --- 2) Shopify localization form fallback (if present anywhere) ---
+  document.addEventListener("submit", function(e){
+    var f = e.target;
+    if (!(f && f.matches('form[action*="/localization"]'))) return;
+    var sel = f.querySelector('select[name="locale_code"], select[name="language_code"], select[name="locale"]');
+    var iso = sel ? (sel.value||"").toLowerCase() : "";
+    if (SUPPORTED.indexOf(iso) !== -1) setSaved(iso);
+  }, true);
+
+  // --- 3) Intercept ALL link clicks: rewrite to active language before navigation ---
+  document.addEventListener("click", function(e){
+    var a = e.target.closest("a[href]");
+    if (!a) return;
+    var href = a.getAttribute("href") || "";
+    if (!href || href[0]==="#" || href.startsWith("mailto:") || href.startsWith("tel:")) return;
+    if (shouldIgnore(href)) return;
+
+    // If the link itself is a locale link (/en, /de), let it pass (it’s an explicit switch)
+    var seg = firstSeg(new URL(href, location.origin).pathname);
+    if (SUPPORTED.indexOf(seg) !== -1) return;
+
+    var chosen = getSaved() || detectFromPath(location.pathname);
+    var newUrl = localizeUrl(href, chosen);
+    if (newUrl !== new URL(href, location.origin).toString()) {
+      e.preventDefault();
+      location.href = newUrl;
+    }
+  }, true);
+
+  // --- 4) Intercept programmatic navigation where possible (PWA) ---
+  function patchNav(obj, method){
+    var orig = obj[method];
+    if (typeof orig !== "function") return;
+    obj[method] = function(url){
+      var chosen = getSaved() || detectFromPath(location.pathname);
+      if (chosen && !shouldIgnore(url)) arguments[0] = localizeUrl(url, chosen);
+      return orig.apply(this, arguments);
+    };
+  }
+  patchNav(location, "assign");
+  patchNav(location, "replace");
+  patchNav(history,  "pushState");
+  patchNav(history,  "replaceState");
+
+  // --- 5) Fix hardcoded PWA destinations on first load (/cart, /account, / etc.) ---
+  (function fixHardcodedOnLoad(){
+    var chosen = getSaved();
+    if (!chosen) return;
+    var cur = detectFromPath(location.pathname);
+    if (cur === chosen) return;
+    var p = location.pathname.toLowerCase();
+    var known = ["/", "/cart", "/account", "/search", "/collections", "/products"];
+    for (var i=0;i<known.length;i++){
+      if (p === known[i] || p.indexOf(known[i]+"/") === 0) {
+        var target = localizeUrl(location.href, chosen);
+        if (target !== location.href) { location.replace(target); }
+        break;
+      }
+    }
+  })();
+})();
+
+</script>
+{% render 'auto-free-sample' %}
+<script src="{{ 'cart-notification.js' | asset_url }}" defer></script>
+
+  </body>
+</html>
+
+{% else %}
+{{ content_for_layout }}
+{%- endunless -%}
