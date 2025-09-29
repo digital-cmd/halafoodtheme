@@ -1,0 +1,18 @@
+# Halafood custom robots (2025-09-26)
+
+User-agent: *
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+Disallow: /search
+
+# Cut crawl on low-value duplicates (keep /collections/ crawlable)
+Disallow: /*?*sort_by=
+Disallow: /*?*filter
+Disallow: /*?*page=
+Disallow: /*?*view=
+Disallow: /*?               
+
+# IMPORTANT: Do NOT disallow /collections/
+
+Sitemap: https://halafood.eu/sitemap.xml

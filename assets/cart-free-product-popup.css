@@ -1,6 +1,6 @@
 /* Cart Free Product Popup - Mobile-First Green Design */
 
-/* Popup Overlay */
+/* Popup Overlay - FIXED */
 .cart-free-popup-overlay {
   position: fixed;
   top: 0;
@@ -16,15 +16,19 @@
   opacity: 0;
   visibility: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none; /* Add this */
 }
 
 .cart-free-popup-overlay.active {
   opacity: 1;
   visibility: visible;
+  display: flex;
+  pointer-events: auto; /* Add this */
 }
 
-/* Main Modal Container */
+/* Ensure modal is clickable */
 .cart-free-popup-modal {
+  pointer-events: auto; /* Add this */
   background: white;
   border-radius: 16px;
   max-width: min(95vw, 1000px);
@@ -35,6 +39,8 @@
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
+  position: relative; /* Add this */
+  z-index: 10000; /* Add this */
 }
 
 .cart-free-popup-overlay.active .cart-free-popup-modal {

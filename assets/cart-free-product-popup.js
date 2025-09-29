@@ -199,28 +199,53 @@
     /**
      * Show the free product popup
      */
-    function showFreeProductPopup() {
-        if (state.isActive) return;
-        
-        state.isActive = true;
-        // DON'T set session here - only when user actually completes or skips
-        
-        createPopupModal();
-        document.body.classList.add('cart-free-popup-active');
-        document.body.style.overflow = 'hidden';
-        
-        // Animate in
-        requestAnimationFrame(() => {
-            elements.overlay.classList.add('active');
-        });
-        
-        loadFreeProducts();
+function showFreeProductPopup() {
+    if (state.isActive || state.hasShownPopup) {
+        console.log('Popup blocked - already active or shown');
+        return;
     }
     
+    state.isActive = true;
+    
+    // Create the popup
+    createPopupModal();
+    
+    if (!elements.overlay) {
+        console.error('Failed to create overlay element');
+        state.isActive = false;
+        return;
+    }
+    
+    document.body.classList.add('cart-free-popup-active');
+    document.body.style.overflow = 'hidden';
+    
+    // Ensure proper initial styles
+    elements.overlay.style.display = 'flex';
+    elements.overlay.style.zIndex = '9999';
+    
+    // Trigger reflow
+    void elements.overlay.offsetHeight;
+    
+    // Add active class
+    setTimeout(() => {
+        if (elements.overlay) {
+            elements.overlay.classList.add('active');
+        }
+    }, 50);
+    
+    // Load products
+    loadFreeProducts();
+}
     /**
      * Create popup modal
      */
     function createPopupModal() {
+        // Remove any existing popups first
+        const existing = document.querySelector('.cart-free-popup-overlay');
+        if (existing) {
+            existing.remove();
+        }
+        
         elements.overlay = document.createElement('div');
         elements.overlay.className = 'cart-free-popup-overlay';
         elements.overlay.innerHTML = getPopupHTML();
@@ -356,71 +381,90 @@
      * Render products using Shopify API data
      */
     function renderProducts(products) {
-        const productsHTML = products.map((product, index) => {
-            const productData = extractProductDataFromAPI(product);
-            if (productData) {
-                state.productData.set(index, productData);
-                return createProductCard(productData, index);
-            }
-            return '';
-        }).filter(html => html !== '').join('');
-        
-        const gridHTML = `
-            <div class="cart-free-products-grid">
-                ${productsHTML}
-            </div>
-        `;
-        
-        elements.productsContainer.innerHTML = gridHTML;
-        
-        // Setup product selection events
-        setupProductSelection();
-        
-        // Initialize lazy loading for images
-        initializeLazyLoading();
+    if (!products || products.length === 0) {
+        showEmptyState();
+        return;
     }
+    
+    let productsHTML = '';
+    let validIndex = 0;
+    
+    products.forEach((product) => {
+        const productData = extractProductDataFromAPI(product);
+        if (productData) {
+            state.productData.set(validIndex, productData);
+            productsHTML += createProductCard(productData, validIndex);
+            validIndex++;
+        }
+    });
+    
+    if (productsHTML === '') {
+        showEmptyState();
+        return;
+    }
+    
+    elements.productsContainer.innerHTML = `
+        <div class="cart-free-products-grid">
+            ${productsHTML}
+        </div>
+    `;
+    
+    // Setup product selection events
+    setupProductSelection();
+}
     
     /**
      * Extract product data from Shopify API response
      */
     function extractProductDataFromAPI(product) {
-        try {
-            const featuredImage = product.featured_image || product.images?.[0];
-            let imageData = null;
-            
-            if (featuredImage) {
-                // Ensure proper Shopify CDN URL
-                let imageSrc = featuredImage;
-                if (typeof featuredImage === 'object') {
-                    imageSrc = featuredImage.src || featuredImage.url;
-                }
-                
-                // Add proper width parameter for Shopify CDN
-                if (imageSrc && imageSrc.includes('cdn.shopify.com')) {
-                    const url = new URL(imageSrc);
-                    url.searchParams.set('width', '300');
-                    imageSrc = url.toString();
-                }
-                
-                imageData = {
-                    src: imageSrc,
-                    alt: product.title,
-                    width: '300',
-                    height: '300'
-                };
+    try {
+        let imageUrl = null;
+        
+        // Try different image properties
+        if (product.featured_image) {
+            imageUrl = product.featured_image;
+        } else if (product.image) {
+            imageUrl = product.image.src || product.image;
+        } else if (product.images && product.images.length > 0) {
+            imageUrl = product.images[0].src || product.images[0];
+        }
+        
+        // Ensure full URL
+        if (imageUrl) {
+            // Handle protocol-relative URLs
+            if (imageUrl.startsWith('//')) {
+                imageUrl = 'https:' + imageUrl;
+            }
+            // Handle relative URLs
+            else if (imageUrl.startsWith('/') && !imageUrl.startsWith('//')) {
+                imageUrl = window.location.origin + imageUrl;
             }
             
-            return {
-                handle: product.handle,
-                title: product.title,
-                url: `/products/${product.handle}`,
-                image: imageData
-            };
-        } catch (error) {
-            console.error('Error extracting product data from API:', error);
-            return null;
+            // Add Shopify image sizing
+            if (imageUrl.includes('cdn.shopify.com')) {
+                // Remove any existing size parameters
+                imageUrl = imageUrl.split('?')[0];
+                // Add width for optimization
+                imageUrl += '?v=' + Date.now() + '&width=300';
+            }
         }
+        
+        // Get variant ID
+        const variant = product.variants && product.variants[0];
+        const variantId = variant ? variant.id : null;
+        
+        return {
+            handle: product.handle,
+            title: product.title,
+            url: `/products/${product.handle}`,
+            variantId: variantId,
+            image: imageUrl
+        };
+    } catch (error) {
+        console.error('Error extracting product data:', error, product);
+        return null;
     }
+}
     
     /**
      * Extract product data from element
@@ -501,37 +545,34 @@
      * Create product card HTML - Using Theme's Image System
      */
     function createProductCard(productData, index) {
-        const imageHTML = productData.image ? `
-            <div class="cart-free-product-image">
-                <div class="t4s-pr t4s-oh t4s_ratio" style="--aspect-ratioapt: 1">
-                    <img class="lazyloadt4s" 
-                         data-src="${productData.image.src}" 
-                         data-widths="[160,320,480]" 
-                         data-sizes="auto"
-                         width="300" 
-                         height="300" 
-                         alt="${productData.image.alt}"
-                         src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
-                    <span class="lazyloadt4s-loader is-bg-img" style="background: url(${productData.image.src});"></span>
-                </div>
+    // Simple image tag for better compatibility
+    const imageHTML = productData.image ? `
+        <div class="cart-free-product-image">
+            <img src="${productData.image}" 
+                 alt="${productData.title}" 
+                 loading="lazy"
+                 onerror="this.onerror=null; this.src='//cdn.shopify.com/s/files/1/0646/2118/6675/files/placeholder_300x300.jpg';">
+        </div>
+    ` : `
+        <div class="cart-free-product-image">
+            <div style="width: 100%; height: 100%; background: #f5f5f5; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">
+                ${getTranslation('no_image', 'No Image')}
             </div>
-        ` : `
-            <div class="cart-free-product-image">
-                <div class="t4s-pr t4s-oh t4s_ratio" style="--aspect-ratioapt: 1; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
-                    No Image
-                </div>
+        </div>
+    `;
+    
+    return `
+        <div class="cart-free-product" 
+             data-product-index="${index}" 
+             data-variant-id="${productData.variantId || ''}"
+             data-product-handle="${productData.handle}">
+            ${imageHTML}
+            <div class="cart-free-product-info">
+                <h3 class="cart-free-product-title">${productData.title}</h3>
             </div>
-        `;
-        
-        return `
-            <div class="cart-free-product" data-product-index="${index}">
-                ${imageHTML}
-                <div class="cart-free-product-info">
-                    <h3 class="cart-free-product-title t4s-d-block t4s-truncate">${productData.title}</h3>
-                </div>
-            </div>
-        `;
-    }
+        </div>
+    `;
+}
     
     /**
      * Setup product selection
@@ -700,50 +741,67 @@
      * Add single product to cart
      */
     async function addProductToCart(productData) {
-        // Get product variants
-        const productResponse = await fetch(`/products/${productData.handle}.js`);
-        if (!productResponse.ok) {
-            throw new Error(`Failed to fetch product: ${productData.handle}`);
-        }
+    try {
+        let variantId = productData.variantId;
         
-        const product = await productResponse.json();
-        
-        if (!product.variants || product.variants.length === 0) {
-            throw new Error(`No variants for product: ${productData.handle}`);
-        }
-        
-        // Find available variant
-        const availableVariant = product.variants.find(variant => variant.available);
-        if (!availableVariant) {
-            throw new Error(`No available variants for: ${productData.handle}`);
-        }
-        
-        // Add to cart
-        const cartData = {
-            id: availableVariant.id,
-            quantity: 1,
-            properties: {
-                '_free_product': 'true',
-                '_free_offer_cart_threshold': CONFIG.cartThreshold,
-                '_free_offer_date': new Date().toISOString()
+        // If we don't have a variant ID, fetch it
+        if (!variantId) {
+            const productResponse = await fetch(`/products/${productData.handle}.js`);
+            if (!productResponse.ok) {
+                throw new Error(`Failed to fetch product: ${productData.handle}`);
             }
+            
+            const product = await productResponse.json();
+            
+            if (!product.variants || product.variants.length === 0) {
+                throw new Error(`No variants for product: ${productData.handle}`);
+            }
+            
+            // Find first available variant
+            const availableVariant = product.variants.find(variant => variant.available);
+            if (!availableVariant) {
+                // Try first variant even if not available (for free gifts)
+                variantId = product.variants[0].id;
+            } else {
+                variantId = availableVariant.id;
+            }
+        }
+        
+        // Prepare cart data with free product properties
+        const cartData = {
+            items: [{
+                id: variantId,
+                quantity: 1,
+                properties: {
+                    '_free_product': 'true',
+                    '_from_collection': CONFIG.collectionHandle,
+                    '_threshold_amount': CONFIG.cartThreshold,
+                    '_added_date': new Date().toISOString()
+                }
+            }]
         };
         
         const response = await fetch('/cart/add.js', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify(cartData)
         });
         
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.description || `Failed to add ${productData.title}`);
+            throw new Error(errorData.description || errorData.message || 'Failed to add product');
         }
         
         return await response.json();
+        
+    } catch (error) {
+        console.error('Error adding product to cart:', error);
+        throw error;
     }
+}
     
     /**
      * Show notification

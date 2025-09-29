@@ -50,37 +50,4 @@ Languages: Arabic (default), English, German
   console.log('- Cart threshold: €{{ cart_threshold | divided_by: 100.0 }}');
   console.log('- Max free products:', {{ max_free_products }});
   console.log('- Collection handle:', {{ free_products_collection | json }});
-</script>{%- comment -%}
-Cart Free Product Popup - Mobile-First Green Design
-Usage: {% render 'cart-free-product-popup' %}
-{%- endcomment -%}
-
-{%- liquid
-  assign cart_threshold = 5000
-  assign max_free_products = 1
-  assign free_products_collection = 'free-gifts-collection'
--%}
-
-{%- comment -%} Configuration Script {%- endcomment -%}
-<script>
-  window.CART_FREE_PRODUCT_CONFIG = {
-    cartThreshold: {{ cart_threshold | json }},
-    maxFreeProducts: {{ max_free_products | json }},
-    collectionHandle: {{ free_products_collection | json }}
-  };
-  console.log('🎁 Free Product Config loaded:', window.CART_FREE_PRODUCT_CONFIG);
-</script>
-
-{%- comment -%} Load Assets {%- endcomment -%}
-<link rel="stylesheet" href="{{ 'cart-free-product-popup.css' | asset_url }}" media="all">
-<script src="{{ 'cart-free-product-popup.js' | asset_url }}" defer></script>
-
-{%- comment -%} Debug Info (Remove in production) {%- endcomment -%}
-<script>
-  console.log('🔍 Free Product Assets Loading:');
-  console.log('- CSS URL:', {{ 'cart-free-product-popup.css' | asset_url | json }});
-  console.log('- JS URL:', {{ 'cart-free-product-popup.js' | asset_url | json }});
-  console.log('- Cart threshold: €{{ cart_threshold | divided_by: 100.0 }}');
-  console.log('- Max free products:', {{ max_free_products }});
-  console.log('- Collection handle:', {{ free_products_collection | json }});
 </script>

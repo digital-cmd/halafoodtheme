@@ -32,10 +32,92 @@ t4sp-theme t4s-wrapper__{{ settings.general_layout }}{% if settings.animations_r
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, height=device-height, minimum-scale=1.0, maximum-scale=1.0">
     <meta name="theme-color" content="{{ settings.body_bg }}">
-    <link rel="canonical" href="{{ canonical_url }}">
+    {%- assign clean_canonical = canonical_url | split:'?' | first -%}
+    <link rel="canonical" href="{{ clean_canonical }}">
+
     <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
     <!-- Google Tag Manager -->
-    
+
+{%- comment -%} HF: noindex all utility & parameterized URLs {%- endcomment -%}
+{%- assign qs = request.query_string | downcase -%}
+{%- assign p  = request.path | downcase -%}
+
+{%- assign has_params_in_canonical = false -%}
+{%- if canonical_url != clean_canonical -%}
+  {%- assign has_params_in_canonical = true -%}
+{%- endif -%}
+
+{%- assign is_utility = false -%}
+{%- if p contains '/cart' or p contains '/checkout' or p contains '/account' or p contains '/search' -%}
+  {%- assign is_utility = true -%}
+{%- endif -%}
+{%- if qs != blank or has_params_in_canonical -%}
+  {%- assign is_utility = true -%}
+{%- endif -%}
+
+{%- if is_utility -%}
+  <!-- HF-NOINDEX active -->
+  <meta name="robots" content="noindex,follow">
+{%- endif -%}
+
+{%- comment -%} HF: noindex + canonical for unwanted DE product URLs {%- endcomment -%}
+{%- assign demote_products_de = 'schokoladensteine,weizengrutze-extra-fein,slm001751,gerostete-freekeh' | split: ',' -%}
+{%- assign lang_prefix = request.path | slice: 0, 4 -%}
+{%- if template contains 'product' and lang_prefix == '/de/' and demote_products_de contains product.handle -%}
+  <meta name="robots" content="noindex,follow">
+  <link rel="canonical" href="{{ shop.url }}/de/collections/lebensmittel">
+{%- endif -%}
+
+
+
+
+{%- comment -%} Hreflang: AR is default/root, plus DE & EN {%- endcomment -%}
+<link rel="alternate" href="{{ shop.url }}{{ request.path | replace_first: '/en', '' | replace_first: '/de', '' }}" hreflang="x-default">
+<link rel="alternate" href="{{ shop.url }}{{ request.path | replace_first: '/en', '' | replace_first: '/de', '' }}" hreflang="ar">
+<link rel="alternate" href="{{ shop.url }}{{ request.path | replace_first: '/de', '' | prepend: '/de' }}" hreflang="de">
+<link rel="alternate" href="{{ shop.url }}{{ request.path | replace_first: '/en', '' | prepend: '/en' }}" hreflang="en">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "url": "https://halafood.eu/en/collections/offers" },
+    { "@type": "ListItem", "position": 2, "url": "https://halafood.eu/en/collections/lebensmittel" },
+    { "@type": "ListItem", "position": 3, "url": "https://halafood.eu/en/collections/gewurze" },
+    { "@type": "ListItem", "position": 4, "url": "https://halafood.eu/en/collections/kosmetik" }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"Organization",
+  "name":"Halafood",
+  "url":"{{ shop.url }}",
+{%- if settings.logo != blank -%}
+"logo":"{{ settings.logo | image_url: width: 512 | prepend: 'https:' }}",
+{%- endif -%}
+  "sameAs":[
+    "https://www.facebook.com/halafoodeu",
+    "https://www.instagram.com/halafood.eu"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"WebSite",
+  "url":"{{ shop.url }}",
+  "potentialAction":{
+    "@type":"SearchAction",
+    "target":"{{ shop.url }}/search?q={search_term_string}",
+    "query-input":"required name=search_term_string"
+  }
+}
+</script>
+
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -51,20 +133,50 @@ t4sp-theme t4s-wrapper__{{ settings.general_layout }}{% if settings.animations_r
       <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
     {%- endif -%}
     
-    {%- if t_name != 'list-collections' -%}
-    {%- capture seo_title -%}
-      {%- if template == 'search' and search.performed == true -%}{{ 'search.general.heading' | t: count: search.results_count }}: {{ 'search.results_with_count_and_term' | t: terms: search.terms, count: search.results_count }}{%- elsif template == 'search.wishlist' %}{{ 'wishlist_page.meta' | t }}{%- elsif template == 'search.compare' %}{{ 'compare_page.meta' | t }}{%- else -%}{{ page_title }}{%- endif -%}
-      {%- if current_tags -%}{%- assign meta_tags = current_tags | join: ', ' %} &ndash; {{ 'general.meta.tags' | t: tags: meta_tags -}}{%- endif -%}
-      {%- if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{%- endif -%}
-      {%- assign escaped_page_title = page_title | escape -%}
-      {%- unless escaped_page_title contains shop.name %} &ndash; {{ shop.name }}{%- endunless -%}
-    {%- endcapture -%}
-    <title>{{ seo_title | strip }}</title>
-    <meta name="description" content="{{ page_description | default: shop.description | default: shop.name | escape }}">
+{%- if t_name != 'list-collections' and template != 'index' -%}
+  {%- capture seo_title -%}
+    {%- if template == 'search' and search.performed == true -%}
+      {{ 'search.general.heading' | t: count: search.results_count }}:
+      {{ 'search.results_with_count_and_term' | t: terms: search.terms, count: search.results_count }}
+    {%- elsif template == 'search.wishlist' -%}
+      {{ 'wishlist_page.meta' | t }}
+    {%- elsif template == 'search.compare' -%}
+      {{ 'compare_page.meta' | t }}
     {%- else -%}
-    <title>{{ 'list_collections.meta_title' | t | escape }}</title><meta name="description" content="{{ 'list_collections.meta_description' | t | escape }}">
+      {{ page_title }}
+    {%- endif -%}
+    {%- if current_tags -%}
+      {%- assign meta_tags = current_tags | join: ', ' -%} – {{ 'general.meta.tags' | t: tags: meta_tags }}
+    {%- endif -%}
+    {%- if current_page != 1 -%} – {{ 'general.meta.page' | t: page: current_page }}{%- endif -%}
+    {%- assign escaped_page_title = page_title | escape -%}
+    {%- unless escaped_page_title contains shop.name -%} – {{ shop.name }}{%- endunless -%}
+  {%- endcapture -%}
+  <title>{{ seo_title | strip }}</title>
+  <meta name="description" content="{{ page_description | default: shop.description | default: shop.name | escape }}">
+{%- elsif t_name == 'list-collections' -%}
+
+  <title>{{ 'list_collections.meta_title' | t | escape }}</title>
+  <meta name="description" content="{{ 'list_collections.meta_description' | t | escape }}">
+{%- endif -%}
+
+
+    {% if template == 'index' %}
+  {% assign lang = request.locale.iso_code | slice: 0,2 %}
+  {% if lang == 'ar' %}
+    <title>هلافود | متجر الأطعمة والمنتجات الشرقية الأصلية</title>
+    <meta name="description" content="تسوق تمور، طحينة، بهارات، حلويات ومنتجات حلال أصلية. توصيل سريع داخل أوروبا.">
+  {% elsif lang == 'de' %}
+    <title>Halafood | Arabische & nahöstliche Lebensmittel online</title>
+    <meta name="description" content="Datteln, Tahini, Gewürze, Süßigkeiten & mehr. Authentische Produkte mit schneller EU-weiter Lieferung.">
+  {% elsif lang == 'en' %}
+    <title>Halafood | Arabic & Middle Eastern Groceries Online</title>
+    <meta name="description" content="Dates, tahini, spices, sweets & more. Authentic products with fast EU-wide delivery.">
+  {% endif %}
+{% endif %}
+
     {%- comment -%} HALAFOOD CUSTOM COLLECTION DESCRIPTIONS {%- endcomment -%}
-{%- if collection -%}
+{% if collection and page_description == blank %}
   {%- assign collection_handle = collection.handle -%}
   {%- case collection_handle -%}
     {%- when 'reis-couscous-bulgur' -%}
@@ -79,8 +191,6 @@ t4sp-theme t4s-wrapper__{{ settings.general_layout }}{% if settings.animations_r
       <meta name="description" content="Discover premium arabic food products. Carefully selected high-quality items from trusted brands.">
   {%- endcase -%}
 {%- endif -%}
-    {%- endif -%}
-
     {%- render 'meta-tags', t_name: t_name -%}
     
     <script src="{{ 'lazysizes.min.js' | asset_url }}" async="async"></script>
@@ -158,20 +268,20 @@ t4sp-theme t4s-wrapper__{{ settings.general_layout }}{% if settings.animations_r
   window.HALA_COLLECTION_PRODUCTS = {};
   
   // 🔧 FIXED: Iterate over the configured collections, not all Shopify collections
-  {%- assign configured_collections = 'max1,max2,max3,free-gifts-collection,angebote,1-1' | split: ',' -%}
+  {%- assign configured_collections = 'max1,max2,max3,e-angebot,free-gifts-collection,1-1,free-samples' | split: ',' -%}
   {%- for collection_handle in configured_collections -%}
     {%- assign collection = collections[collection_handle] -%}
     {%- if collection -%}
-      window.HALA_COLLECTION_PRODUCTS['{{ collection_handle }}'] = [
+        window.HALA_COLLECTION_PRODUCTS['{{ collection_handle }}'] = [
         {%- for product in collection.products limit: 250 -%}
           {
-            id: {{ product.id }},
-            handle: '{{ product.handle }}'
+            id: {{ product.id | json }},
+            handle: {{ product.handle | json }}
           }{%- unless forloop.last -%},{%- endunless -%}
         {%- endfor -%}
       ];
     {%- else -%}
-      console.warn('HALA: Collection "{{ collection_handle }}" not found');
+      window.HALA_COLLECTION_PRODUCTS['{{ collection_handle }}'] = [];
     {%- endif -%}
   {%- endfor -%}
   
@@ -233,16 +343,15 @@ t4sp-theme t4s-wrapper__{{ settings.general_layout }}{% if settings.animations_r
     background: none !important;
 }
 </style>
-
-{% if template contains 'collection' and current_page > 1 %}
-  <meta name="robots" content="noindex,follow">
-{% endif %}
-
-
   </head>
 
   <body class="template-{{ request.page_type | handle }} {{ class_lazy }}"{% if body_img != blank %} data-bgset="{{ body_img | image_url: width: 1 }}" data-optimumx="2" data-sizes="auto"{% endif -%}>{% if isRTL %}<script type="text/javascript" id="t4s-flicker-fix">// Flicker fix.</script>{% endif -%}
-    <a class="skip-to-content-link visually-hidden" href="#MainContent">{{ "accessibility.skip_to_text" | t }}</a>
+  <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8HXVLZ5"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+  
+  <a class="skip-to-content-link visually-hidden" href="#MainContent">{{ "accessibility.skip_to_text" | t }}</a>
     <div class="t4s-close-overlay t4s-op-0"></div>
 
     <div class="t4s-website-wrapper">
