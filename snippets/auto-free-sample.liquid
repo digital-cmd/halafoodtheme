@@ -1,212 +1,298 @@
+<!-- Replace your auto-free-sample snippet with this fixed version -->
 {%- liquid
   assign sample_threshold = 2000
   assign sample_collection = 'free-samples'
 -%}
 
-<!-- DEBUG: Check collection -->
-<script>
-console.log('🔍 COLLECTION DEBUG:');
-console.log('Looking for: {{ sample_collection }}');
-{%- assign test_col = collections['free-samples'] -%}
-console.log('Collection found: {{ test_col.id }}');
-console.log('Collection title: {{ test_col.title }}');
-console.log('Collection handle: {{ test_col.handle }}');
-console.log('Products in collection: {{ test_col.products_count }}');
-console.log('Collection published: {{ test_col.published }}');
-{%- for product in test_col.products limit: 5 -%}
-  console.log('Product {{ forloop.index }}: {{ product.title }} (ID: {{ product.id }}, Available: {{ product.available }})');
-{%- endfor -%}
-</script>
+{%- unless request.page_type == 'cart' or template contains 'product' or template contains 'collection' or template contains 'index' -%}
+  {%- comment -%} Exit early on pages where this isn't needed {%- endcomment -%}
+{%- else -%}
 
+<!-- Auto Free Sample System - FIXED -->
 <script>
 (function() {
-  console.log('🎁 FREE SAMPLE: Script starting...');
+  console.log('🎁 FREE SAMPLE: Initializing FIXED version...');
   
   const SAMPLE_THRESHOLD = {{ sample_threshold }};
   const SAMPLE_COLLECTION = '{{ sample_collection }}';
   
-  // Get products from collection
+  // Get products from collection - FIXED to work properly
   const SAMPLE_PRODUCTS = [
-    {%- for product in collections['free-samples'].products limit: 10 -%}
-      {%- if product.available and product.first_available_variant -%}
-        {
-          handle: '{{ product.handle }}',
-          title: '{{ product.title | escape }}',
-          variantId: {{ product.first_available_variant.id }},
-          available: true
-        }{%- unless forloop.last -%},{%- endunless -%}
-      {%- endif -%}
-    {%- endfor -%}
-  ];
+    {%- assign sample_collection_obj = collections[sample_collection] -%}
+    {%- if sample_collection_obj and sample_collection_obj.products.size > 0 -%}
+      {%- for product in sample_collection_obj.products limit: 10 -%}
+        {%- if product.available -%}
+          {%- assign variant = product.first_available_variant -%}
+          {%- if variant -%}
+            {
+              handle: '{{ product.handle }}',
+              title: '{{ product.title | escape }}',
+              variantId: {{ variant.id }},
+              available: true
+            }{%- unless forloop.last -%},{%- endunless -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+  ].filter(p => p && p.variantId);
 
-  // Fallback: Try to get specific products if collection is empty
-  {%- if collections['free-samples'].products_count == 0 or collections['free-samples'].all_products_count == 0 -%}
-    console.log('⚠️ Collection is empty, trying fallback products...');
-    const FALLBACK_PRODUCTS = [
-      {%- assign sample1 = all_products['flora-orange-sample'] -%}
-      {%- assign sample2 = all_products['free-random-sample'] -%}
-      {%- assign sample3 = all_products['free-sample'] -%}
-      
-      {%- if sample1 and sample1.available and sample1.first_available_variant -%}
-        {
-          handle: '{{ sample1.handle }}',
-          title: '{{ sample1.title | escape }}',
-          variantId: {{ sample1.first_available_variant.id }},
-          available: true
-        },
-      {%- endif -%}
-      
-      {%- if sample2 and sample2.available and sample2.first_available_variant -%}
-        {
-          handle: '{{ sample2.handle }}',
-          title: '{{ sample2.title | escape }}',
-          variantId: {{ sample2.first_available_variant.id }},
-          available: true
-        },
-      {%- endif -%}
-      
-      {%- if sample3 and sample3.available and sample3.first_available_variant -%}
-        {
-          handle: '{{ sample3.handle }}',
-          title: '{{ sample3.title | escape }}',
-          variantId: {{ sample3.first_available_variant.id }},
-          available: true
-        }
-      {%- endif -%}
-    ].filter(p => p);
-    
-    if (FALLBACK_PRODUCTS.length > 0) {
-      SAMPLE_PRODUCTS.push(...FALLBACK_PRODUCTS);
-    }
-  {%- endif -%}
-
-  console.log('📦 FREE SAMPLE: Found', SAMPLE_PRODUCTS.length, 'products');
-  console.log('Products:', SAMPLE_PRODUCTS);
+  console.log('📦 FREE SAMPLE: Found', SAMPLE_PRODUCTS.length, 'products:', SAMPLE_PRODUCTS);
   console.log('💰 FREE SAMPLE: Threshold is €' + (SAMPLE_THRESHOLD/100));
 
+  if (SAMPLE_PRODUCTS.length === 0) {
+    console.error('❌ FREE SAMPLE: No products available!');
+    console.error('Please check:');
+    console.error('1. Collection "' + SAMPLE_COLLECTION + '" exists');
+    console.error('2. Collection has products in stock');
+    console.error('3. Products have available variants');
+    return;
+  }
 
+  // Track if we've already processed in this session
+  let isProcessing = false;
+  let lastCartTotal = 0;
 
-  async function checkAndAddFreeSample() {
-    console.log('🔄 FREE SAMPLE: Checking cart...');
-    
-    // Exit if no products available
-    if (SAMPLE_PRODUCTS.length === 0) {
-      console.error('❌ FREE SAMPLE: No products available, exiting check');
+  async function checkAndAddFreeSample(forceCheck = false) {
+    // Prevent multiple simultaneous checks
+    if (isProcessing) {
+      console.log('🔄 FREE SAMPLE: Already processing, skipping...');
       return;
     }
     
+    console.log('🔍 FREE SAMPLE: Checking cart...');
+    isProcessing = true;
+    
     try {
-      const cart = await fetch('/cart.js').then(r => r.json());
-      console.log('🛒 FREE SAMPLE: Cart total:', cart.total_price, 'cents (€' + (cart.total_price/100) + ')');
-      
-      const hasSample = cart.items.some(item => 
-        item.properties && item.properties['_free_sample'] === 'true'
-      );
-      console.log('📌 FREE SAMPLE: Already has sample?', hasSample);
-      
-      if (cart.total_price >= SAMPLE_THRESHOLD && !hasSample) {
-        console.log('✅ FREE SAMPLE: Eligible! Adding sample...');
-        
-        const availableSample = SAMPLE_PRODUCTS[0];
-        if (!availableSample) {
-          console.log('❌ FREE SAMPLE: No available samples');
-          return;
+      // Get fresh cart data
+      const response = await fetch('/cart.js', {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch cart');
+      }
+      
+      const cart = await response.json();
+      console.log('🛒 Cart total: €' + (cart.total_price/100), 'Items:', cart.item_count);
+      
+      // Check if cart total changed significantly
+      if (!forceCheck && Math.abs(cart.total_price - lastCartTotal) < 100) {
+        console.log('Cart total unchanged, skipping check');
+        return;
+      }
+      lastCartTotal = cart.total_price;
+      
+      // Check if cart already has a free sample
+      const hasSample = cart.items.some(item => 
+        item.properties && (
+          item.properties['_free_sample'] === 'true' ||
+          item.properties['_free_product'] === 'true' ||
+          item.price === 0
+        )
+      );
+      
+      console.log('Has free sample already?', hasSample);
+      
+      // Add sample if eligible and not already present
+      if (cart.total_price >= SAMPLE_THRESHOLD && !hasSample) {
+        console.log('✅ Eligible for free sample! Adding product ID:', SAMPLE_PRODUCTS[0].variantId);
         
-        console.log('📦 FREE SAMPLE: Adding:', availableSample);
-        
-        const response = await fetch('/cart/add.js', {
+        const addResponse = await fetch('/cart/add.js', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
           body: JSON.stringify({
-            id: availableSample.variantId,
-            quantity: 1,
-            properties: {
-              '_free_sample': 'true',
-              '_sample_threshold': SAMPLE_THRESHOLD,
-              '_auto_added': new Date().toISOString()
-            }
+            items: [{
+              id: SAMPLE_PRODUCTS[0].variantId,
+              quantity: 1,
+              properties: {
+                '_free_sample': 'true',
+                '_sample_threshold': SAMPLE_THRESHOLD.toString(),
+                '_added_at': new Date().toISOString()
+              }
+            }]
           })
         });
         
-        if (response.ok) {
-          const result = await response.json();
-          console.log('✅ FREE SAMPLE: Added successfully!', result);
+        if (addResponse.ok) {
+          const result = await addResponse.json();
+          console.log('✅ Sample added successfully!', result);
+          
+          // Show notification
+          showSampleNotification('Free sample added to your cart! 🎁');
+          
+          // Trigger cart update
           document.dispatchEvent(new CustomEvent('cart:updated'));
           
-          if (window.location.pathname.includes('/cart')) {
-            setTimeout(() => location.reload(), 1500);
+          // Reload cart page if we're on it
+          if (window.location.pathname === '/cart' || window.location.pathname.includes('/cart')) {
+            setTimeout(() => {
+              console.log('Reloading cart page...');
+              location.reload();
+            }, 1500);
           }
         } else {
-          const error = await response.text();
-          console.error('❌ FREE SAMPLE: Failed to add:', error);
+          const error = await addResponse.text();
+          console.error('Failed to add sample:', error);
         }
         
       } else if (cart.total_price < SAMPLE_THRESHOLD && hasSample) {
-        console.log('🗑️ FREE SAMPLE: Below threshold, removing...');
+        console.log('🗑️ Below threshold, removing sample...');
         
         const sampleItem = cart.items.find(item => 
           item.properties && item.properties['_free_sample'] === 'true'
         );
         
         if (sampleItem) {
-          await fetch('/cart/change.js', {
+          console.log('Removing sample item:', sampleItem.key);
+          
+          const removeResponse = await fetch('/cart/change.js', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
             body: JSON.stringify({
               id: sampleItem.key,
               quantity: 0
             })
           });
           
-          console.log('✅ FREE SAMPLE: Removed');
-          document.dispatchEvent(new CustomEvent('cart:updated'));
-          
-          if (window.location.pathname.includes('/cart')) {
-            setTimeout(() => location.reload(), 1500);
+          if (removeResponse.ok) {
+            console.log('✅ Sample removed');
+            showSampleNotification('Free sample removed (cart below threshold)');
+            
+            // Reload if on cart page
+            if (window.location.pathname === '/cart' || window.location.pathname.includes('/cart')) {
+              setTimeout(() => location.reload(), 1000);
+            }
           }
         }
       } else {
-        console.log('ℹ️ FREE SAMPLE: No action needed');
+        console.log('No action needed - Threshold:', cart.total_price >= SAMPLE_THRESHOLD, 'Has sample:', hasSample);
       }
+      
     } catch (error) {
       console.error('❌ FREE SAMPLE Error:', error);
+    } finally {
+      isProcessing = false;
     }
   }
-
-  // Only initialize if products are available
-  if (SAMPLE_PRODUCTS.length > 0) {
-    // Check immediately
-    console.log('⏰ FREE SAMPLE: Initial check in 1 second...');
-    setTimeout(checkAndAddFreeSample, 1000);
+  
+  // Show notification
+  function showSampleNotification(message) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #75BB14, #79B650);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-weight: bold;
+      z-index: 99999;
+      animation: slideIn 0.5s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
     
-    // Monitor cart changes
-    document.addEventListener('cart:updated', () => {
-      console.log('📡 FREE SAMPLE: Cart updated event');
-      setTimeout(checkAndAddFreeSample, 500);
-    });
-    
-    // Monitor AJAX calls
-    const originalFetch = window.fetch;
-    window.fetch = function(...args) {
-      const [url] = args;
-      if (url && (url.includes('/cart/add') || url.includes('/cart/change') || url.includes('/cart/update'))) {
-        return originalFetch.apply(this, args).then(response => {
-          console.log('📡 FREE SAMPLE: Cart AJAX detected');
-          setTimeout(checkAndAddFreeSample, 500);
-          return response;
-        });
-      }
-      return originalFetch.apply(this, args);
-    };
-    
-  } else {
-    console.error('❌ FREE SAMPLE: No products available in collection!');
-    console.error('Please ensure:');
-    console.error('1. The "free-samples" collection exists');
-    console.error('2. Products in the collection are in stock');
-    console.error('3. Products have available variants');
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.5s ease';
+      setTimeout(() => notification.remove(), 500);
+    }, 3000);
   }
   
+  // Add animation styles
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  // Initial check after page loads
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM loaded, checking in 2 seconds...');
+      setTimeout(() => checkAndAddFreeSample(true), 2000);
+    });
+  } else {
+    console.log('DOM already loaded, checking in 2 seconds...');
+    setTimeout(() => checkAndAddFreeSample(true), 2000);
+  }
+  
+  // Monitor cart changes with debouncing
+  let debounceTimer;
+  function debouncedCheck() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => checkAndAddFreeSample(), 1000);
+  }
+  
+  // Listen for cart updates
+  document.addEventListener('cart:updated', debouncedCheck);
+  document.addEventListener('cart:changed', debouncedCheck);
+  
+  // Intercept fetch requests to cart endpoints
+  const originalFetch = window.fetch;
+  window.fetch = function(...args) {
+    const [url] = args;
+    if (typeof url === 'string' && (
+      url.includes('/cart/add') || 
+      url.includes('/cart/change') || 
+      url.includes('/cart/update')
+    )) {
+      return originalFetch.apply(this, args).then(response => {
+        // Check cart after any cart modification
+        setTimeout(() => checkAndAddFreeSample(), 1500);
+        return response;
+      });
+    }
+    return originalFetch.apply(this, args);
+  };
+  
+  // Manual trigger for debugging
+  window.debugFreeSample = function() {
+    console.log('🔧 Manual free sample check triggered');
+    isProcessing = false; // Reset flag
+    checkAndAddFreeSample(true);
+  };
+  
+  console.log('✅ FREE SAMPLE: System ready. Type debugFreeSample() to test manually.');
 })();
 </script>
+
+<!-- Add visual indicator for free sample eligibility -->
+{%- if request.page_type == 'cart' -%}
+<style>
+  .free-sample-indicator {
+    background: linear-gradient(135deg, #75BB14, #79B650);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+    text-align: center;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+  }
+</style>
+{%- endif -%}
+
+{%- endunless -%}

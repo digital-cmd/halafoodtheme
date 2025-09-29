@@ -199,7 +199,13 @@
     /**
      * Show the free product popup
      */
+// Add this complete fix to your cart-free-product-popup.js file
+// Replace the showFreeProductPopup function with this version:
+
 function showFreeProductPopup() {
+    console.log('📦 Attempting to show popup...');
+    console.log('State check - isActive:', state.isActive, 'hasShownPopup:', state.hasShownPopup);
+    
     if (state.isActive || state.hasShownPopup) {
         console.log('Popup blocked - already active or shown');
         return;
@@ -207,57 +213,142 @@ function showFreeProductPopup() {
     
     state.isActive = true;
     
-    // Create the popup
-    createPopupModal();
-    
-    if (!elements.overlay) {
-        console.error('Failed to create overlay element');
+    try {
+        // Create the popup
+        createPopupModal();
+        
+        if (!elements.overlay) {
+            console.error('❌ Failed to create overlay element');
+            state.isActive = false;
+            return;
+        }
+        
+        console.log('✅ Overlay created successfully');
+        
+        // Add body class
+        document.body.classList.add('cart-free-popup-active');
+        
+        // CRITICAL FIX: Force the popup to be visible with inline styles
+        elements.overlay.style.cssText = `
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: rgba(0, 0, 0, 0.85) !important;
+            backdrop-filter: blur(8px) !important;
+            z-index: 999999 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            opacity: 0;
+            visibility: visible !important;
+            transition: opacity 0.4s ease !important;
+        `;
+        
+        // Force body overflow hidden
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'relative';
+        
+        // Force a reflow
+        void elements.overlay.offsetHeight;
+        
+        // Animate in
+        setTimeout(() => {
+            if (elements.overlay) {
+                elements.overlay.style.opacity = '1';
+                elements.overlay.classList.add('active');
+                console.log('✅ Popup should be visible now');
+                
+                // Double-check visibility
+                const isVisible = window.getComputedStyle(elements.overlay).display !== 'none' 
+                    && window.getComputedStyle(elements.overlay).visibility !== 'hidden'
+                    && window.getComputedStyle(elements.overlay).opacity !== '0';
+                    
+                if (!isVisible) {
+                    console.error('❌ Popup still not visible, forcing display');
+                    elements.overlay.style.display = 'flex !important';
+                    elements.overlay.style.opacity = '1 !important';
+                    elements.overlay.style.visibility = 'visible !important';
+                }
+            }
+        }, 10);
+        
+        // Load products after a slight delay to ensure popup is visible
+        setTimeout(() => {
+            loadFreeProducts();
+        }, 100);
+        
+    } catch (error) {
+        console.error('❌ Error showing popup:', error);
         state.isActive = false;
-        return;
     }
-    
-    document.body.classList.add('cart-free-popup-active');
-    document.body.style.overflow = 'hidden';
-    
-    // Ensure proper initial styles
-    elements.overlay.style.display = 'flex';
-    elements.overlay.style.zIndex = '9999';
-    
-    // Trigger reflow
-    void elements.overlay.offsetHeight;
-    
-    // Add active class
-    setTimeout(() => {
-        if (elements.overlay) {
-            elements.overlay.classList.add('active');
-        }
-    }, 50);
-    
-    // Load products
-    loadFreeProducts();
 }
-    /**
-     * Create popup modal
-     */
-    function createPopupModal() {
-        // Remove any existing popups first
-        const existing = document.querySelector('.cart-free-popup-overlay');
-        if (existing) {
-            existing.remove();
-        }
-        
-        elements.overlay = document.createElement('div');
-        elements.overlay.className = 'cart-free-popup-overlay';
-        elements.overlay.innerHTML = getPopupHTML();
-        
-        document.body.appendChild(elements.overlay);
-        
-        // Cache DOM elements
-        cacheElements();
-        
-        // Setup event listeners
-        setupEventListeners();
+
+
+// Also update the createPopupModal function to be more robust
+function createPopupModal() {
+    console.log('🔨 Creating popup modal...');
+    
+    // Remove any existing popups first
+    const existing = document.querySelector('.cart-free-popup-overlay');
+    if (existing) {
+        console.log('Removing existing popup...');
+        existing.remove();
     }
+    
+    // Create overlay
+    elements.overlay = document.createElement('div');
+    elements.overlay.className = 'cart-free-popup-overlay';
+    
+    // Get translations
+    const translations = window.CART_FREE_PRODUCT_CONFIG?.translations || {};
+    const maxProducts = window.CART_FREE_PRODUCT_CONFIG?.maxFreeProducts || 1;
+    
+    // Set inner HTML
+    elements.overlay.innerHTML = `
+        <div class="cart-free-popup-modal">
+            <div class="cart-free-popup-header">
+                <div class="cart-free-popup-title">
+                    🎁 ${translations.title || 'Choose ' + maxProducts + ' FREE Products'}
+                </div>
+                <div class="cart-free-popup-subtitle">
+                    ${translations.subtitle || 'Select any ' + maxProducts + ' items below - completely free!'}
+                </div>
+                <div class="cart-free-progress-container">
+                    <div class="cart-free-progress-fill"></div>
+                    <div class="cart-free-progress-text">
+                        <span class="selected-count">0</span> / ${maxProducts} ${translations.selected || 'selected'}
+                    </div>
+                </div>
+                <div class="cart-free-actions">
+                    <button class="cart-free-add-btn" disabled>
+                        ${translations.add_button || 'Add FREE Products'}
+                    </button>
+                    <button class="cart-free-skip-btn">
+                        ${translations.skip_button || 'Skip'}
+                    </button>
+                </div>
+            </div>
+            <div class="cart-free-products-section">
+                <div class="cart-free-loading">
+                    <div class="cart-free-loading-spinner"></div>
+                    <div class="cart-free-loading-text">${translations.loading || 'Loading free products...'}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Append to body
+    document.body.appendChild(elements.overlay);
+    console.log('✅ Overlay appended to body');
+    
+    // Cache DOM elements
+    cacheElements();
+    
+    // Setup event listeners
+    setupEventListeners();
+}
     
     /**
      * Get popup HTML template using passed translations
@@ -346,125 +437,153 @@ function showFreeProductPopup() {
         }
     }
     
-    /**
-     * Load free products from collection using Shopify API
-     */
-    async function loadFreeProducts() {
+async function loadFreeProducts() {
+    console.log('📦 Loading free products...');
+    
+    if (!elements.productsContainer) {
+        console.error('❌ Products container not found');
+        return;
+    }
+    
+    try {
         state.isLoading = true;
         
-        try {
-            // Use Shopify's products API for better data
-            const response = await fetch(`/collections/${CONFIG.collectionHandle}/products.json?limit=50`);
-            if (!response.ok) {
-                throw new Error('Failed to load collection products');
-            }
-            
-            const data = await response.json();
-            const products = data.products;
-            
-            if (!products || products.length === 0) {
-                showEmptyState();
-                return;
-            }
-            
-            renderProducts(products);
-            
-        } catch (error) {
-            console.error('Error loading free products:', error);
+        // Show loading state
+        elements.productsContainer.innerHTML = `
+            <div class="cart-free-loading">
+                <div class="cart-free-loading-spinner"></div>
+                <div class="cart-free-loading-text">${getTranslation('loading', 'Loading free products...')}</div>
+            </div>
+        `;
+        
+        console.log('🔍 Fetching products from collection:', CONFIG.collectionHandle);
+        
+        // Fetch products from collection
+        const response = await fetch(`/collections/${CONFIG.collectionHandle}/products.json?limit=12`);
+        
+        if (!response.ok) {
+            console.error('❌ Failed to fetch products:', response.status);
             showErrorState();
-        } finally {
-            state.isLoading = false;
+            return;
         }
+        
+        const data = await response.json();
+        console.log('✅ Products loaded:', data.products?.length || 0, 'products');
+        
+        if (!data.products || data.products.length === 0) {
+            showEmptyState();
+            return;
+        }
+        
+        // Render products
+        renderProducts(data.products);
+        
+    } catch (error) {
+        console.error('❌ Error loading products:', error);
+        showErrorState();
+    } finally {
+        state.isLoading = false;
     }
+}
+
+// Add this helper function to check popup visibility
+function debugPopupVisibility() {
+    const overlay = document.querySelector('.cart-free-popup-overlay');
+    if (overlay) {
+        const styles = window.getComputedStyle(overlay);
+        console.log('Popup visibility debug:', {
+            exists: true,
+            display: styles.display,
+            visibility: styles.visibility,
+            opacity: styles.opacity,
+            zIndex: styles.zIndex,
+            position: styles.position,
+            classList: overlay.className
+        });
+        
+        // Check if any parent elements are hiding it
+        let parent = overlay.parentElement;
+        while (parent && parent !== document.body) {
+            const parentStyles = window.getComputedStyle(parent);
+            if (parentStyles.display === 'none' || parentStyles.visibility === 'hidden') {
+                console.warn('Parent element is hiding the popup:', parent);
+            }
+            parent = parent.parentElement;
+        }
+    } else {
+        console.log('Popup overlay not found in DOM');
+    }
+}
     
     /**
      * Render products using Shopify API data
      */
     function renderProducts(products) {
-    if (!products || products.length === 0) {
-        showEmptyState();
-        return;
+        const productsHTML = products.map((product, index) => {
+            const productData = extractProductDataFromAPI(product);
+            if (productData) {
+                state.productData.set(index, productData);
+                return createProductCard(productData, index);
+            }
+            return '';
+        }).filter(html => html !== '').join('');
+        
+        const gridHTML = `
+            <div class="cart-free-products-grid">
+                ${productsHTML}
+            </div>
+        `;
+        
+        elements.productsContainer.innerHTML = gridHTML;
+        
+        // Setup product selection events
+        setupProductSelection();
+        
+        // Initialize lazy loading for images
+        initializeLazyLoading();
     }
-    
-    let productsHTML = '';
-    let validIndex = 0;
-    
-    products.forEach((product) => {
-        const productData = extractProductDataFromAPI(product);
-        if (productData) {
-            state.productData.set(validIndex, productData);
-            productsHTML += createProductCard(productData, validIndex);
-            validIndex++;
-        }
-    });
-    
-    if (productsHTML === '') {
-        showEmptyState();
-        return;
-    }
-    
-    elements.productsContainer.innerHTML = `
-        <div class="cart-free-products-grid">
-            ${productsHTML}
-        </div>
-    `;
-    
-    // Setup product selection events
-    setupProductSelection();
-}
     
     /**
      * Extract product data from Shopify API response
      */
     function extractProductDataFromAPI(product) {
-    try {
-        let imageUrl = null;
-        
-        // Try different image properties
-        if (product.featured_image) {
-            imageUrl = product.featured_image;
-        } else if (product.image) {
-            imageUrl = product.image.src || product.image;
-        } else if (product.images && product.images.length > 0) {
-            imageUrl = product.images[0].src || product.images[0];
-        }
-        
-        // Ensure full URL
-        if (imageUrl) {
-            // Handle protocol-relative URLs
-            if (imageUrl.startsWith('//')) {
-                imageUrl = 'https:' + imageUrl;
-            }
-            // Handle relative URLs
-            else if (imageUrl.startsWith('/') && !imageUrl.startsWith('//')) {
-                imageUrl = window.location.origin + imageUrl;
+        try {
+            const featuredImage = product.featured_image || product.images?.[0];
+            let imageData = null;
+            
+            if (featuredImage) {
+                // Ensure proper Shopify CDN URL
+                let imageSrc = featuredImage;
+                if (typeof featuredImage === 'object') {
+                    imageSrc = featuredImage.src || featuredImage.url;
+                }
+                
+                // Add proper width parameter for Shopify CDN
+                if (imageSrc && imageSrc.includes('cdn.shopify.com')) {
+                    const url = new URL(imageSrc);
+                    url.searchParams.set('width', '300');
+                    imageSrc = url.toString();
+                }
+                
+                imageData = {
+                    src: imageSrc,
+                    alt: product.title,
+                    width: '300',
+                    height: '300'
+                };
             }
             
-            // Add Shopify image sizing
-            if (imageUrl.includes('cdn.shopify.com')) {
-                // Remove any existing size parameters
-                imageUrl = imageUrl.split('?')[0];
-                // Add width for optimization
-                imageUrl += '?v=' + Date.now() + '&width=300';
-            }
+            return {
+                handle: product.handle,
+                title: product.title,
+                url: `/products/${product.handle}`,
+                image: imageData
+            };
+        } catch (error) {
+            console.error('Error extracting product data from API:', error);
+            return null;
         }
-        
-        // Get variant ID
-        const variant = product.variants && product.variants[0];
-        const variantId = variant ? variant.id : null;
-        
-        return {
-            handle: product.handle,
-            title: product.title,
-            url: `/products/${product.handle}`,
-            variantId: variantId,
-            image: imageUrl
-        };
-    } catch (error) {
-        console.error('Error extracting product data:', error, product);
-        return null;
     }
-}
     
     /**
      * Extract product data from element
@@ -545,34 +664,37 @@ function showFreeProductPopup() {
      * Create product card HTML - Using Theme's Image System
      */
     function createProductCard(productData, index) {
-    // Simple image tag for better compatibility
-    const imageHTML = productData.image ? `
-        <div class="cart-free-product-image">
-            <img src="${productData.image}" 
-                 alt="${productData.title}" 
-                 loading="lazy"
-                 onerror="this.onerror=null; this.src='//cdn.shopify.com/s/files/1/0646/2118/6675/files/placeholder_300x300.jpg';">
-        </div>
-    ` : `
-        <div class="cart-free-product-image">
-            <div style="width: 100%; height: 100%; background: #f5f5f5; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">
-                ${getTranslation('no_image', 'No Image')}
+        const imageHTML = productData.image ? `
+            <div class="cart-free-product-image">
+                <div class="t4s-pr t4s-oh t4s_ratio" style="--aspect-ratioapt: 1">
+                    <img class="lazyloadt4s" 
+                         data-src="${productData.image.src}" 
+                         data-widths="[160,320,480]" 
+                         data-sizes="auto"
+                         width="300" 
+                         height="300" 
+                         alt="${productData.image.alt}"
+                         src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+                    <span class="lazyloadt4s-loader is-bg-img" style="background: url(${productData.image.src});"></span>
+                </div>
             </div>
-        </div>
-    `;
-    
-    return `
-        <div class="cart-free-product" 
-             data-product-index="${index}" 
-             data-variant-id="${productData.variantId || ''}"
-             data-product-handle="${productData.handle}">
-            ${imageHTML}
-            <div class="cart-free-product-info">
-                <h3 class="cart-free-product-title">${productData.title}</h3>
+        ` : `
+            <div class="cart-free-product-image">
+                <div class="t4s-pr t4s-oh t4s_ratio" style="--aspect-ratioapt: 1; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
+                    No Image
+                </div>
             </div>
-        </div>
-    `;
-}
+        `;
+        
+        return `
+            <div class="cart-free-product" data-product-index="${index}">
+                ${imageHTML}
+                <div class="cart-free-product-info">
+                    <h3 class="cart-free-product-title t4s-d-block t4s-truncate">${productData.title}</h3>
+                </div>
+            </div>
+        `;
+    }
     
     /**
      * Setup product selection
@@ -741,67 +863,50 @@ function showFreeProductPopup() {
      * Add single product to cart
      */
     async function addProductToCart(productData) {
-    try {
-        let variantId = productData.variantId;
-        
-        // If we don't have a variant ID, fetch it
-        if (!variantId) {
-            const productResponse = await fetch(`/products/${productData.handle}.js`);
-            if (!productResponse.ok) {
-                throw new Error(`Failed to fetch product: ${productData.handle}`);
-            }
-            
-            const product = await productResponse.json();
-            
-            if (!product.variants || product.variants.length === 0) {
-                throw new Error(`No variants for product: ${productData.handle}`);
-            }
-            
-            // Find first available variant
-            const availableVariant = product.variants.find(variant => variant.available);
-            if (!availableVariant) {
-                // Try first variant even if not available (for free gifts)
-                variantId = product.variants[0].id;
-            } else {
-                variantId = availableVariant.id;
-            }
+        // Get product variants
+        const productResponse = await fetch(`/products/${productData.handle}.js`);
+        if (!productResponse.ok) {
+            throw new Error(`Failed to fetch product: ${productData.handle}`);
         }
         
-        // Prepare cart data with free product properties
+        const product = await productResponse.json();
+        
+        if (!product.variants || product.variants.length === 0) {
+            throw new Error(`No variants for product: ${productData.handle}`);
+        }
+        
+        // Find available variant
+        const availableVariant = product.variants.find(variant => variant.available);
+        if (!availableVariant) {
+            throw new Error(`No available variants for: ${productData.handle}`);
+        }
+        
+        // Add to cart
         const cartData = {
-            items: [{
-                id: variantId,
-                quantity: 1,
-                properties: {
-                    '_free_product': 'true',
-                    '_from_collection': CONFIG.collectionHandle,
-                    '_threshold_amount': CONFIG.cartThreshold,
-                    '_added_date': new Date().toISOString()
-                }
-            }]
+            id: availableVariant.id,
+            quantity: 1,
+            properties: {
+                '_free_product': 'true',
+                '_free_offer_cart_threshold': CONFIG.cartThreshold,
+                '_free_offer_date': new Date().toISOString()
+            }
         };
         
         const response = await fetch('/cart/add.js', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify(cartData)
         });
         
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.description || errorData.message || 'Failed to add product');
+            throw new Error(errorData.description || `Failed to add ${productData.title}`);
         }
         
         return await response.json();
-        
-    } catch (error) {
-        console.error('Error adding product to cart:', error);
-        throw error;
     }
-}
     
     /**
      * Show notification

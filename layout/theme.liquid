@@ -521,9 +521,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 })();
 
 </script>
-{% render 'auto-free-sample' %}
-<script src="{{ 'cart-notification.js' | asset_url }}" defer></script>
-
+{%- comment -%} Free Products System - Ordered by threshold {%- endcomment -%}
+{%- if request.page_type == 'cart' -%}
+  {%- comment -%} First check for free sample (lower threshold) {%- endcomment -%}
+  {%- render 'auto-free-sample' -%}
+  {%- comment -%} Then check for free product popup (higher threshold) {%- endcomment -%}
+  {%- render 'cart-free-product-popup' -%}
+{%- elsif template contains 'product' or template contains 'collection' -%}
+  {%- render 'auto-free-sample' -%}
+{%- endif -%}
   </body>
 </html>
 

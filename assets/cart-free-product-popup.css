@@ -2,33 +2,29 @@
 
 /* Popup Overlay - FIXED */
 .cart-free-popup-overlay {
-  position: fixed;
+  position: fixed !important;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
-  z-index: 9999;
-  display: flex;
+  z-index: 99999 !important; /* Increased z-index */
+  display: none; /* Start with display:none */
   align-items: center;
   justify-content: center;
   opacity: 0;
-  visibility: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none; /* Add this */
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .cart-free-popup-overlay.active {
+  display: flex !important; /* Force display when active */
   opacity: 1;
-  visibility: visible;
-  display: flex;
-  pointer-events: auto; /* Add this */
 }
 
-/* Ensure modal is clickable */
+/* Ensure modal is clickable and visible */
 .cart-free-popup-modal {
-  pointer-events: auto; /* Add this */
+  pointer-events: auto !important;
   background: white;
   border-radius: 16px;
   max-width: min(95vw, 1000px);
@@ -39,12 +35,18 @@
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-  position: relative; /* Add this */
-  z-index: 10000; /* Add this */
+  position: relative;
+  z-index: 100000 !important; /* Ensure modal is above overlay */
 }
 
 .cart-free-popup-overlay.active .cart-free-popup-modal {
   transform: translateY(0) scale(1);
+}
+
+/* Body class when popup is active */
+body.cart-free-popup-active {
+  overflow: hidden !important;
+  position: relative !important;
 }
 
 /* Compact Header Section */
@@ -91,6 +93,8 @@
   position: relative;
   z-index: 1;
 }
+
+
 
 /* Compact Progress Bar */
 .cart-free-progress-container {
