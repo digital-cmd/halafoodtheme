@@ -1,42 +1,50 @@
-<!-- Replace your auto-free-sample snippet with this fixed version -->
 {%- liquid
   assign sample_threshold = 2000
   assign sample_collection = 'free-samples'
 -%}
 
+{%- comment -%} Only load on pages where cart interactions happen {%- endcomment -%}
 {%- unless request.page_type == 'cart' or template contains 'product' or template contains 'collection' or template contains 'index' -%}
   {%- comment -%} Exit early on pages where this isn't needed {%- endcomment -%}
 {%- else -%}
 
-<!-- Auto Free Sample System - FIXED -->
+<!-- Auto Free Sample System -->
 <script>
 (function() {
-  console.log('🎁 FREE SAMPLE: Initializing FIXED version...');
+  console.log('🎁 FREE SAMPLE: Initializing...');
   
   const SAMPLE_THRESHOLD = {{ sample_threshold }};
   const SAMPLE_COLLECTION = '{{ sample_collection }}';
   
-  // Get products from collection - FIXED to work properly
+  // Get products from collection with proper null checking
   const SAMPLE_PRODUCTS = [
     {%- assign sample_collection_obj = collections[sample_collection] -%}
     {%- if sample_collection_obj and sample_collection_obj.products.size > 0 -%}
       {%- for product in sample_collection_obj.products limit: 10 -%}
-        {%- if product.available -%}
-          {%- assign variant = product.first_available_variant -%}
-          {%- if variant -%}
-            {
-              handle: '{{ product.handle }}',
-              title: '{{ product.title | escape }}',
-              variantId: {{ variant.id }},
-              available: true
-            }{%- unless forloop.last -%},{%- endunless -%}
-          {%- endif -%}
+        {%- if product.available and product.first_available_variant -%}
+          {
+            handle: '{{ product.handle }}',
+            title: '{{ product.title | escape }}',
+            variantId: {{ product.first_available_variant.id }},
+            available: true
+          }{%- unless forloop.last -%},{%- endunless -%}
         {%- endif -%}
       {%- endfor -%}
+    {%- else -%}
+      {%- comment -%} Fallback products if collection is empty/missing {%- endcomment -%}
+      {%- assign sample1 = all_products['flora-orange-sample'] -%}
+      {%- if sample1 and sample1.available and sample1.first_available_variant -%}
+        {
+          handle: '{{ sample1.handle }}',
+          title: '{{ sample1.title | escape }}',
+          variantId: {{ sample1.first_available_variant.id }},
+          available: true
+        }
+      {%- endif -%}
     {%- endif -%}
-  ].filter(p => p && p.variantId);
+  ].filter(p => p);
 
-  console.log('📦 FREE SAMPLE: Found', SAMPLE_PRODUCTS.length, 'products:', SAMPLE_PRODUCTS);
+  console.log('📦 FREE SAMPLE: Found', SAMPLE_PRODUCTS.length, 'products');
   console.log('💰 FREE SAMPLE: Threshold is €' + (SAMPLE_THRESHOLD/100));
 
   if (SAMPLE_PRODUCTS.length === 0) {
@@ -44,255 +52,103 @@
     console.error('Please check:');
     console.error('1. Collection "' + SAMPLE_COLLECTION + '" exists');
     console.error('2. Collection has products in stock');
-    console.error('3. Products have available variants');
     return;
   }
 
-  // Track if we've already processed in this session
-  let isProcessing = false;
-  let lastCartTotal = 0;
-
-  async function checkAndAddFreeSample(forceCheck = false) {
-    // Prevent multiple simultaneous checks
-    if (isProcessing) {
-      console.log('🔄 FREE SAMPLE: Already processing, skipping...');
-      return;
-    }
-    
-    console.log('🔍 FREE SAMPLE: Checking cart...');
-    isProcessing = true;
+  async function checkAndAddFreeSample() {
+    console.log('🔄 FREE SAMPLE: Checking cart...');
     
     try {
-      // Get fresh cart data
-      const response = await fetch('/cart.js', {
+      const cart = await fetch('/cart.js', {
         headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache'
+          'Cache-Control': 'no-cache'
         }
-      });
+      }).then(r => r.json());
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch cart');
-      }
+      console.log('🛒 Cart total: €' + (cart.total_price/100));
       
-      const cart = await response.json();
-      console.log('🛒 Cart total: €' + (cart.total_price/100), 'Items:', cart.item_count);
-      
-      // Check if cart total changed significantly
-      if (!forceCheck && Math.abs(cart.total_price - lastCartTotal) < 100) {
-        console.log('Cart total unchanged, skipping check');
-        return;
-      }
-      lastCartTotal = cart.total_price;
-      
-      // Check if cart already has a free sample
       const hasSample = cart.items.some(item => 
-        item.properties && (
-          item.properties['_free_sample'] === 'true' ||
-          item.properties['_free_product'] === 'true' ||
-          item.price === 0
-        )
+        item.properties && item.properties['_free_sample'] === 'true'
       );
       
-      console.log('Has free sample already?', hasSample);
-      
-      // Add sample if eligible and not already present
       if (cart.total_price >= SAMPLE_THRESHOLD && !hasSample) {
-        console.log('✅ Eligible for free sample! Adding product ID:', SAMPLE_PRODUCTS[0].variantId);
+        console.log('✅ Eligible for free sample! Adding...');
         
-        const addResponse = await fetch('/cart/add.js', {
+        const response = await fetch('/cart/add.js', {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            items: [{
-              id: SAMPLE_PRODUCTS[0].variantId,
-              quantity: 1,
-              properties: {
-                '_free_sample': 'true',
-                '_sample_threshold': SAMPLE_THRESHOLD.toString(),
-                '_added_at': new Date().toISOString()
-              }
-            }]
+            id: SAMPLE_PRODUCTS[0].variantId,
+            quantity: 1,
+            properties: {
+              '_free_sample': 'true',
+              '_sample_threshold': SAMPLE_THRESHOLD
+            }
           })
         });
         
-        if (addResponse.ok) {
-          const result = await addResponse.json();
-          console.log('✅ Sample added successfully!', result);
-          
-          // Show notification
-          showSampleNotification('Free sample added to your cart! 🎁');
-          
+        if (response.ok) {
+          console.log('✅ Sample added successfully!');
           // Trigger cart update
           document.dispatchEvent(new CustomEvent('cart:updated'));
-          
-          // Reload cart page if we're on it
-          if (window.location.pathname === '/cart' || window.location.pathname.includes('/cart')) {
-            setTimeout(() => {
-              console.log('Reloading cart page...');
-              location.reload();
-            }, 1500);
+          if (window.location.pathname === '/cart') {
+            setTimeout(() => location.reload(), 1000);
           }
-        } else {
-          const error = await addResponse.text();
-          console.error('Failed to add sample:', error);
         }
-        
       } else if (cart.total_price < SAMPLE_THRESHOLD && hasSample) {
         console.log('🗑️ Below threshold, removing sample...');
-        
         const sampleItem = cart.items.find(item => 
           item.properties && item.properties['_free_sample'] === 'true'
         );
         
         if (sampleItem) {
-          console.log('Removing sample item:', sampleItem.key);
-          
-          const removeResponse = await fetch('/cart/change.js', {
+          await fetch('/cart/change.js', {
             method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               id: sampleItem.key,
               quantity: 0
             })
           });
           
-          if (removeResponse.ok) {
-            console.log('✅ Sample removed');
-            showSampleNotification('Free sample removed (cart below threshold)');
-            
-            // Reload if on cart page
-            if (window.location.pathname === '/cart' || window.location.pathname.includes('/cart')) {
-              setTimeout(() => location.reload(), 1000);
-            }
+          console.log('✅ Sample removed');
+          if (window.location.pathname === '/cart') {
+            setTimeout(() => location.reload(), 1000);
           }
         }
-      } else {
-        console.log('No action needed - Threshold:', cart.total_price >= SAMPLE_THRESHOLD, 'Has sample:', hasSample);
       }
-      
     } catch (error) {
       console.error('❌ FREE SAMPLE Error:', error);
-    } finally {
-      isProcessing = false;
     }
   }
-  
-  // Show notification
-  function showSampleNotification(message) {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: linear-gradient(135deg, #75BB14, #79B650);
-      color: white;
-      padding: 15px 25px;
-      border-radius: 8px;
-      font-weight: bold;
-      z-index: 99999;
-      animation: slideIn 0.5s ease;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    `;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-      notification.style.animation = 'slideOut 0.5s ease';
-      setTimeout(() => notification.remove(), 500);
-    }, 3000);
-  }
-  
-  // Add animation styles
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-      from { transform: translateX(0); opacity: 1; }
-      to { transform: translateX(100%); opacity: 0; }
-    }
-  `;
-  document.head.appendChild(style);
-  
-  // Initial check after page loads
+
+  // Initial check after page load
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('DOM loaded, checking in 2 seconds...');
-      setTimeout(() => checkAndAddFreeSample(true), 2000);
+      setTimeout(checkAndAddFreeSample, 1000);
     });
   } else {
-    console.log('DOM already loaded, checking in 2 seconds...');
-    setTimeout(() => checkAndAddFreeSample(true), 2000);
+    setTimeout(checkAndAddFreeSample, 1000);
   }
   
-  // Monitor cart changes with debouncing
-  let debounceTimer;
-  function debouncedCheck() {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => checkAndAddFreeSample(), 1000);
-  }
+  // Monitor cart changes
+  document.addEventListener('cart:updated', () => {
+    setTimeout(checkAndAddFreeSample, 500);
+  });
   
-  // Listen for cart updates
-  document.addEventListener('cart:updated', debouncedCheck);
-  document.addEventListener('cart:changed', debouncedCheck);
-  
-  // Intercept fetch requests to cart endpoints
+  // Intercept cart AJAX
   const originalFetch = window.fetch;
   window.fetch = function(...args) {
     const [url] = args;
-    if (typeof url === 'string' && (
-      url.includes('/cart/add') || 
-      url.includes('/cart/change') || 
-      url.includes('/cart/update')
-    )) {
+    if (url && (url.includes('/cart/add') || url.includes('/cart/change') || url.includes('/cart/update'))) {
       return originalFetch.apply(this, args).then(response => {
-        // Check cart after any cart modification
-        setTimeout(() => checkAndAddFreeSample(), 1500);
+        setTimeout(checkAndAddFreeSample, 500);
         return response;
       });
     }
     return originalFetch.apply(this, args);
   };
   
-  // Manual trigger for debugging
-  window.debugFreeSample = function() {
-    console.log('🔧 Manual free sample check triggered');
-    isProcessing = false; // Reset flag
-    checkAndAddFreeSample(true);
-  };
-  
-  console.log('✅ FREE SAMPLE: System ready. Type debugFreeSample() to test manually.');
 })();
 </script>
-
-<!-- Add visual indicator for free sample eligibility -->
-{%- if request.page_type == 'cart' -%}
-<style>
-  .free-sample-indicator {
-    background: linear-gradient(135deg, #75BB14, #79B650);
-    color: white;
-    padding: 10px 15px;
-    border-radius: 8px;
-    margin: 10px 0;
-    text-align: center;
-    font-weight: bold;
-    animation: pulse 2s infinite;
-  }
-  
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.8; }
-  }
-</style>
-{%- endif -%}
-
 {%- endunless -%}

@@ -394,40 +394,39 @@ endif -%}
                   %}
                   <h1 class="t4s-product__title" style="--title-family:var(--font-family-{{ bk_stts.fnt_df_pr }});--title-style:{{ bk_stts.txt_tr_pr }};--title-size:{{ bk_stts.size_pr }}px;--title-weight:{{ bk_stts.fw_pr }};--title-line-height:{{ lh_pr }};--title-spacing:{{ bk_stts.ls_pr }}px;--title-color:{{ bk_stts.pr_title_color }};--title-color-hover:{{ bk_stts.pr_title_color }};" {{ block.shopify_attributes }}>{{ product.title }}</h1>
 
-                {%- when 'price_review' -%}
-                  <div class="t4s-product__price-review" style="--price-size:{{ bk_stts.size_price_pr }}px;--price-weight:{{ bk_stts.fw_price_pr }};--price-color:{{ bk_stts.price_color }};--price-sale-color:{{ bk_stts.price_sale_color }};">
-                    {%- render 'product-price-single', variant: current_variant, product: product, PR_no_pick: PR_no_pick, type_sale: bk_stts.type_sale, price_varies_style: bk_stts.price -%}
-                    {%- if bk_stts.rating -%}
-                    {%- assign pid = product.id -%}
-                    <a href="#{{ idTabReview }}" data-go-id="#{{ idTabReview }}" class="t4s-product__review t4s-d-inline-block">
-                      {%- case settings.app_review -%}
-                        {%- when '1' -%}
-                          <span class="shopify-product-reviews-badge" data-id="{{ pid }}"></span>
-                        {%- when '2' -%}
-                          <div class="review-widget"><ryviu-widget-total reviews_data="{{ pr_metafields.ryviu.product_reviews_info | escape }}" product_id="{{ pid }}" handle="{{ product.handle }}"></ryviu-widget-total></div>
-                        {%- when '3' -%}
-                          <div product-id="{{ pid }}" class="alr-display-review-badge"></div>
-                        {%- when '4' -%}
-                          <div class="loox-rating" data-id="{{ pid }}" data-rating="{{ pr_metafields.loox.avg_rating }}" data-raters="{{ pr_metafields.loox.num_reviews }}"></div>
-                        {%- when '5' -%}
-                          {%- capture the_snippet_review_avg %}{% render 'ssw-widget-avg-rate-profile' %}{% endcapture -%}
-                          {%- unless the_snippet_review_avg contains 'Liquid error' %}{{ the_snippet_review_avg }}{% endunless -%}
-                        {%- when '7' -%}
-                          <!-- Start of Judge.me code -->
-                            <div style='{{ jm_style }}' class='jdgm-widget jdgm-preview-badge' data-id='{{ product.id }}' style="pointer-events: none;">
-                              {{- product.metafields.judgeme.badge -}}
-                            </div>
-                          <!-- End of Judge.me code -->
-                        {%- when '8' -%}
-                          <div id="scm-product-detail-rate" class="scm-reviews-rate" data-rate-version2= {{ product.metafields.scm_review_importer.reviewsData.reviewCountInfo | json }} data-product-id= {{ product.id }}></div>
-                        {%- else -%}
-                          <div class="t4s-pr_rating t4s-review_pr_other">{{ bk_stts.review_liquid }}</div>
-                      {%- endcase -%}
-                    </a>
-                    {%- endif -%}
-                  </div>
-
-                  {%- if bk_stts.tax_ship and cart.taxes_included or shop.shipping_policy.body != blank -%}
+{%- when 'price_review' -%}
+  <div class="t4s-product__price-review" style="--price-size:{{ bk_stts.size_price_pr }}px;--price-weight:{{ bk_stts.fw_price_pr }};--price-color:{{ bk_stts.price_color }};--price-sale-color:{{ bk_stts.price_sale_color }};">
+    {%- render 'product-price-single', variant: current_variant, product: product, PR_no_pick: PR_no_pick, type_sale: bk_stts.type_sale, price_varies_style: bk_stts.price -%}
+    {%- if bk_stts.rating -%}
+    {%- assign pid = product.id -%}
+    <a href="#{{ idTabReview }}" data-go-id="#{{ idTabReview }}" class="t4s-product__review t4s-d-inline-block">
+      {%- case settings.app_review -%}
+        {%- when '1' -%}
+          <span class="shopify-product-reviews-badge" data-id="{{ pid }}"></span>
+        {%- when '2' -%}
+          <div class="review-widget"><ryviu-widget-total reviews_data="{{ pr_metafields.ryviu.product_reviews_info | escape }}" product_id="{{ pid }}" handle="{{ product.handle }}"></ryviu-widget-total></div>
+        {%- when '3' -%}
+          <div product-id="{{ pid }}" class="alr-display-review-badge"></div>
+        {%- when '4' -%}
+          <div class="loox-rating" data-id="{{ pid }}" data-rating="{{ pr_metafields.loox.avg_rating }}" data-raters="{{ pr_metafields.loox.num_reviews }}"></div>
+        {%- when '5' -%}
+          {%- capture the_snippet_review_avg %}{% render 'ssw-widget-avg-rate-profile' %}{% endcapture -%}
+          {%- unless the_snippet_review_avg contains 'Liquid error' %}{{ the_snippet_review_avg }}{% endunless -%}
+        {%- when '7' -%}
+          <!-- Start of Judge.me code -->
+            <div style='{{ jm_style }}' class='jdgm-widget jdgm-preview-badge' data-id='{{ product.id }}' style="pointer-events: none;">
+              {{- product.metafields.judgeme.badge -}}
+            </div>
+          <!-- End of Judge.me code -->
+        {%- when '8' -%}
+          <div id="scm-product-detail-rate" class="scm-reviews-rate" data-rate-version2= {{ product.metafields.scm_review_importer.reviewsData.reviewCountInfo | json }} data-product-id= {{ product.id }}></div>
+        {%- else -%}
+          <div class="t4s-pr_rating t4s-review_pr_other">{{ bk_stts.review_liquid }}</div>
+      {%- endcase -%}
+    </a>
+    {%- endif -%}
+  </div>
+                    {%- if bk_stts.tax_ship and cart.taxes_included or shop.shipping_policy.body != blank -%}
                     <div class="t4s-product__policies t4s-rte" data-product-policies>
                       {%- if cart.taxes_included -%}
                         {{ 'products.product.include_taxes' | t }}
@@ -437,6 +436,357 @@ endif -%}
                       {%- endif -%}
                     </div>
                   {%- endif -%}
+  
+  {%- comment -%} Country Flag Display - Product Page with Beautiful Styling {%- endcomment -%}
+  {%- comment -%} FORCE DEFAULT LANGUAGE - IGNORE TRANSLATIONS {%- endcomment -%}
+{%- liquid
+  capture herkunft_default
+    echo product.metafields.custom.herkunft
+  endcapture
+  assign herkunft = herkunft_default | strip | split: '||' | first
+-%}
+  
+  {%- if herkunft != blank -%}
+    <div class="t4s-product-origin-line">
+      <span class="t4s-origin-label">
+        {%- case request.locale.iso_code -%}
+          {%- when 'ar' -%}
+            هذا المنتج يأتي من:
+          {%- when 'de' -%}
+            Dieses Produkt kommt aus:
+          {%- else -%}
+            This product comes from:
+        {%- endcase -%}
+      </span>
+      
+      {%- comment -%} Check if Arabic text {%- endcomment -%}
+      {%- if herkunft contains 'ا' or herkunft contains 'ل' or herkunft contains 'ت' or herkunft contains 'س' or herkunft contains 'أ' or herkunft contains 'و' or herkunft contains 'ي' or herkunft contains 'ه' or herkunft contains 'ر' or herkunft contains 'ن' or herkunft contains 'د' or herkunft contains 'ك' -%}
+        {%- assign country_check = herkunft -%}
+      {%- else -%}
+        {%- assign country_check = herkunft | downcase -%}
+      {%- endif -%}
+      
+      {%- comment -%} COMPLETE MAPPING - EXACTLY AS IN GRID {%- endcomment -%}
+      {%- case country_check -%}
+        
+        {%- comment -%} === ARABIC EXACT MATCH === {%- endcomment -%}
+        {%- when 'سوريا' or 'سورية' -%}
+          {%- assign country_file = 'syria' -%}
+        {%- when 'الأردن' -%}
+          {%- assign country_file = 'jordan' -%}
+        {%- when 'تركيا' -%}
+          {%- assign country_file = 'turkey' -%}
+        {%- when 'الأرجنتين' or 'argentina' -%}
+          {%- assign country_file = 'argentina' -%}
+        {%- when 'أوكرانيا' or 'اوكرانيا' -%}
+          {%- assign country_file = 'ukraine' -%}
+        {%- when 'الهند' -%}
+          {%- assign country_file = 'india' -%}
+        
+        {%- comment -%} === T COUNTRIES === {%- endcomment -%}
+        {%- when 'türkei' or 'tuerkei' or 'turkey' or 'türkiye' or 'turkiye' or 'truthahn' -%}
+          {%- assign country_file = 'turkey' -%}
+        {%- when 'tunesien' or 'tunisia' or 'tunesisch' -%}
+          {%- assign country_file = 'tunisia' -%}
+        {%- when 'thailand' -%}
+          {%- assign country_file = 'thailand' -%}
+        
+        {%- comment -%} === L COUNTRIES === {%- endcomment -%}
+        {%- when 'libanon' or 'lebanon' -%}
+          {%- assign country_file = 'lebanon' -%}
+        {%- when 'libyen' or 'libya' -%}
+          {%- assign country_file = 'libya' -%}
+        
+        {%- comment -%} === U COUNTRIES === {%- endcomment -%}
+        {%- when 'uae' or 'u.a.e' or 'vae' or 'vereinigte arabische emirate' -%}
+          {%- assign country_file = 'uae' -%}
+        {%- when 'ungarn' or 'hungary' -%}
+          {%- assign country_file = 'hungary' -%}
+        {%- when 'usa' or 'amerika' or 'america' -%}
+          {%- assign country_file = 'usa' -%}
+        {%- when 'ukraine' -%}
+          {%- assign country_file = 'ukraine' -%}
+        
+        {%- comment -%} === J COUNTRIES === {%- endcomment -%}
+        {%- when 'jordanien' or 'jordan' or 'jordanisch' -%}
+          {%- assign country_file = 'jordan' -%}
+        {%- when 'jemen' or 'yemen' -%}
+          {%- assign country_file = 'yemen' -%}
+        
+        {%- comment -%} === A COUNTRIES === {%- endcomment -%}
+        {%- when 'ägypten' or 'aegypten' or 'egypt' -%}
+          {%- assign country_file = 'egypt' -%}
+        {%- when 'algerien' or 'algeria' -%}
+          {%- assign country_file = 'algeria' -%}
+        {%- when 'afghanistan' -%}
+          {%- assign country_file = 'afghanistan' -%}
+        {%- when 'argentinien' or 'argentina' -%}
+          {%- assign country_file = 'argentina' -%}
+        {%- when 'australien' or 'australia' -%}
+          {%- assign country_file = 'australia' -%}
+        {%- when 'aleppo' -%}
+          {%- assign country_file = 'syria' -%}
+        
+        {%- comment -%} === S COUNTRIES === {%- endcomment -%}
+        {%- when 'syrien' or 'syria' or 'syrisch' -%}
+          {%- assign country_file = 'syria' -%}
+        {%- when 'saudi arabien' or 'saudi arabia' or 'saudi-arabien' -%}
+          {%- assign country_file = 'saudi-arabia' -%}
+        {%- when 'schweiz' or 'switzerland' -%}
+          {%- assign country_file = 'switzerland' -%}
+        {%- when 'serbien' or 'serbia' or 'serbisch' -%}
+          {%- assign country_file = 'serbia' -%}
+        {%- when 'sri lanka' -%}
+          {%- assign country_file = 'srilanka' -%}
+        {%- when 'sudan' -%}
+          {%- assign country_file = 'sudan' -%}
+        {%- when 'südsudan' or 'suedsudan' or 'south sudan' -%}
+          {%- assign country_file = 'south-sudan' -%}
+        {%- when 'somalia' -%}
+          {%- assign country_file = 'somalia' -%}
+        
+        {%- comment -%} === E COUNTRIES === {%- endcomment -%}
+        {%- when 'england' or 'eng' or 'uk' -%}
+          {%- assign country_file = 'england' -%}
+        
+        {%- comment -%} === I COUNTRIES === {%- endcomment -%}
+        {%- when 'italien' or 'italy' or 'italia' or 'italienisch' -%}
+          {%- assign country_file = 'italy.' -%}
+        {%- when 'indien' or 'india' or 'indisch' -%}
+          {%- assign country_file = 'india' -%}
+        {%- when 'indonesien' or 'indonesia' -%}
+          {%- assign country_file = 'indonesia' -%}
+        {%- when 'irak' or 'iraq' -%}
+          {%- assign country_file = 'iraq' -%}
+        {%- when 'iran' -%}
+          {%- assign country_file = 'iran' -%}
+        
+        {%- comment -%} === D COUNTRIES === {%- endcomment -%}
+        {%- when 'deutschland' or 'germany' or 'de' -%}
+          {%- assign country_file = 'germany' -%}
+        {%- when 'dänemark' or 'daenemark' or 'denmark' -%}
+          {%- assign country_file = 'denmark' -%}
+        {%- when 'dschibuti' or 'djibouti' -%}
+          {%- assign country_file = 'djibouti' -%}
+        
+        {%- comment -%} === O COUNTRIES === {%- endcomment -%}
+        {%- when 'österreich' or 'oesterreich' or 'austria' -%}
+          {%- assign country_file = 'austria' -%}
+        {%- when 'oman' -%}
+          {%- assign country_file = 'oman' -%}
+        
+        {%- comment -%} === P COUNTRIES === {%- endcomment -%}
+        {%- when 'pakistan' -%}
+          {%- assign country_file = 'Pakistan' -%}  {%- comment -%} CAPITAL P! {%- endcomment -%}
+        {%- when 'palästina' or 'palaestina' or 'palestine' -%}
+          {%- assign country_file = 'palestine' -%}
+        
+        {%- comment -%} === F COUNTRIES === {%- endcomment -%}
+        {%- when 'frankreich' or 'france' or 'fränkisch' or 'fraenkisch' -%}
+          {%- assign country_file = 'france' -%}
+        
+        {%- comment -%} === N COUNTRIES === {%- endcomment -%}
+        {%- when 'niederlande' or 'netherlands' or 'holland' -%}
+          {%- assign country_file = 'netherlands' -%}
+        
+        {%- comment -%} === C COUNTRIES === {%- endcomment -%}
+        {%- when 'chile' -%}
+          {%- assign country_file = 'chile' -%}
+        {%- when 'comoros' or 'komoren' -%}
+          {%- assign country_file = 'comoros' -%}
+        
+        {%- comment -%} === K/Q COUNTRIES === {%- endcomment -%}
+        {%- when 'katar' or 'qatar' -%}
+          {%- assign country_file = 'qatar' -%}
+        {%- when 'kuwait' -%}
+          {%- assign country_file = 'kuwait' -%}
+        
+        {%- comment -%} === B COUNTRIES === {%- endcomment -%}
+        {%- when 'bahrain' -%}
+          {%- assign country_file = 'bahrain' -%}
+        
+        {%- comment -%} === M COUNTRIES === {%- endcomment -%}
+        {%- when 'marokko' or 'morocco' -%}
+          {%- assign country_file = 'morocco' -%}
+        {%- when 'mauretanien' or 'mauritanien' or 'mauritania' -%}
+          {%- assign country_file = 'mauritania' -%}
+        
+        {%- comment -%} === W COUNTRIES === {%- endcomment -%}
+        {%- when 'westsahara' or 'western sahara' or 'western-sahara' -%}
+          {%- assign country_file = 'western-sahara' -%}
+        
+        {%- else -%}
+          {%- if herkunft contains 'ا' or herkunft contains 'ل' or herkunft contains 'أ' -%}
+            {%- assign country_file = '' -%}
+          {%- else -%}
+            {%- assign country_file = country_check | replace: ' ', '-' | replace: 'ä', 'ae' | replace: 'ö', 'oe' | replace: 'ü', 'ue' -%}
+          {%- endif -%}
+      {%- endcase -%}
+      
+      {%- if country_file != '' -%}
+        {%- comment -%} Try all file variations {%- endcomment -%}
+        {%- assign flag_found = false -%}
+        
+        {%- comment -%} Special case for Italy {%- endcomment -%}
+        {%- if country_file == 'italy.' -%}
+          {%- assign flag_filename = 'flag-italy.WEBP' -%}
+          {%- assign flag_url = flag_filename | file_url -%}
+          {%- if flag_url != blank and flag_url != '' -%}
+            {%- assign flag_found = true -%}
+          {%- endif -%}
+        {%- endif -%}
+        
+        {%- comment -%} Try .webp lowercase {%- endcomment -%}
+        {%- unless flag_found -%}
+          {%- assign flag_filename = 'flag-' | append: country_file | append: '.webp' -%}
+          {%- assign flag_url = flag_filename | file_url -%}
+          {%- if flag_url != blank and flag_url != '' -%}
+            {%- assign flag_found = true -%}
+          {%- endif -%}
+        {%- endunless -%}
+        
+        {%- comment -%} Try .WEBP uppercase {%- endcomment -%}
+        {%- unless flag_found -%}
+          {%- assign flag_filename = 'flag-' | append: country_file | append: '.WEBP' -%}
+          {%- assign flag_url = flag_filename | file_url -%}
+          {%- if flag_url != blank and flag_url != '' -%}
+            {%- assign flag_found = true -%}
+          {%- endif -%}
+        {%- endunless -%}
+        
+        {%- comment -%} Try .png lowercase {%- endcomment -%}
+        {%- unless flag_found -%}
+          {%- assign flag_filename = 'flag-' | append: country_file | append: '.png' -%}
+          {%- assign flag_url = flag_filename | file_url -%}
+          {%- if flag_url != blank and flag_url != '' -%}
+            {%- assign flag_found = true -%}
+          {%- endif -%}
+        {%- endunless -%}
+        
+        {%- comment -%} Try .PNG uppercase {%- endcomment -%}
+        {%- unless flag_found -%}
+          {%- assign flag_filename = 'flag-' | append: country_file | append: '.PNG' -%}
+          {%- assign flag_url = flag_filename | file_url -%}
+          {%- if flag_url != blank and flag_url != '' -%}
+            {%- assign flag_found = true -%}
+          {%- endif -%}
+        {%- endunless -%}
+        
+        {%- comment -%} Display flag with beautiful styling {%- endcomment -%}
+        {%- if flag_found -%}
+          <span class="t4s-origin-flag-badge" data-country="{{ herkunft }}">
+            <img class="t4s-origin-flag-icon" 
+                 src="{{ flag_url }}" 
+                 alt="{{ herkunft }} flag" 
+                 width="20"
+                 height="15"
+                 loading="lazy"
+                 data-flag-country="{{ country_file }}">
+          </span>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+  
+<style>
+  @keyframes flagFadeInProduct {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Product Page Origin Flag - Beautiful Styling */
+  
+  .t4s-product-origin-line {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+    width: auto !important;
+    flex-wrap: nowrap !important;
+    position: relative !important;
+    z-index: 2 !important;
+    clear: both !important;
+  }
+  
+  .t4s-origin-label {
+    font-size: 14px !important;
+    color: #666 !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: static !important;
+  }
+  
+  /* Beautiful flag badge styling from grid view */
+  .t4s-origin-flag-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    vertical-align: middle !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 5px 8px !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    border: none !important;
+    border-radius: 6px !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    animation: flagFadeInProduct 0.3s ease-out !important;
+    transition: all 0.2s ease !important;
+    cursor: default !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    z-index: 10 !important;
+  }
+  
+  .t4s-origin-flag-badge:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+  }
+  
+  .t4s-origin-flag-icon {
+    display: block !important;
+    width: 20px !important;
+    height: 15px !important;
+    object-fit: cover !important;
+    border-radius: 2px !important;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Ensure proper alignment */
+  .t4s-product__price-review + .t4s-product-origin-line {
+    clear: none !important;
+    float: none !important;
+    display: inline-flex !important;
+  }
+  
+  /* Override any inherited styles */
+  .t4s-product__info-container .t4s-product-origin-line,
+  .t4s-product__info-wrapper .t4s-product-origin-line {
+    position: relative !important;
+    display: inline-flex !important;
+  }
+  
+  /* Remove conflicting styles */
+  .t4s-product__price-review {
+    position: relative;
+    margin-bottom: 0;
+  }
+</style>
+
 
                 {%- when 'description' -%}
                   {%- liquid
@@ -787,15 +1137,65 @@ endif -%}
                   </div>
 
                 {%- when 'sold' %}{% if bk_stts.text == blank or isProductAvailable == false %}{% continue %}{% endif -%}
-                  <div id="t4s-sold{{ bk_id }}" class="t4s-pr_flash_sold t4s-ch t4s-dn" data-time="120000" data-flash-sold='{ "mins":{{ bk_stts.mins }}, "maxs":{{ bk_stts.maxs }}, "mint":{{ bk_stts.mint }}, "maxt":{{ bk_stts.maxt }}, "id":"{{ product.id }}", "time": 120000 }' {{ block.shopify_attributes }}>
-                    {%- if bk_stts.icon != '1' -%}{%- assign image = bk_stts.img -%}
-                      {%- if bk_stts.icon == '3' and image != blank -%}<img class="lazyloadt4s t4s-w-100 t4s-ani-{{ bk_stts.ani }}" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="{{ image | image_url: width: 50 }}" width="{{ image.width }}" height="{{ image.height }}" alt="{{ image.alt }}">
-                      {%- else -%}<i class="t4s-ani-{{ bk_stts.ani }} {{ bk_stts.icon_name }}"></i>
-                      {%- endif -%}
-                      {%- if bk_stts.ani != 'none' %}<link href="{{ 'ani-atc.min.css' | asset_url }}" rel="stylesheet" media="print" onload="this.media='all'">{% endif -%}
-                      {%- endif -%}
-                      {{ bk_stts.text | replace: '[sold]', '<span data-sold class="t4s-pr__sold t4s-fwm"></span>' | replace: '[hour]', '<span data-hour class="t4s-pr__hrs t4s-fwm"></span>' }}
-                  </div>
+  <div id="t4s-sold{{ bk_id }}" class="t4s-pr_flash_sold t4s-ch t4s-dn" data-time="120000" data-flash-sold='{ "mins":{{ bk_stts.mins }}, "maxs":{{ bk_stts.maxs }}, "mint":{{ bk_stts.mint }}, "maxt":{{ bk_stts.maxt }}, "id":"{{ product.id }}", "time": 120000 }' {{ block.shopify_attributes }}>
+    {%- if bk_stts.icon != '1' -%}{%- assign image = bk_stts.img -%}
+      {%- if bk_stts.icon == '3' and image != blank -%}<img class="lazyloadt4s t4s-w-100 t4s-ani-{{ bk_stts.ani }}" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="{{ image | image_url: width: 50 }}" width="{{ image.width }}" height="{{ image.height }}" alt="{{ image.alt }}">
+      {%- else -%}<i class="t4s-ani-{{ bk_stts.ani }} {{ bk_stts.icon_name }}"></i>
+      {%- endif -%}
+      {%- if bk_stts.ani != 'none' %}<link href="{{ 'ani-atc.min.css' | asset_url }}" rel="stylesheet" media="print" onload="this.media='all'">{% endif -%}
+    {%- endif -%}
+    {{ bk_stts.text | replace: '[sold]', '<span data-sold class="t4s-pr__sold t4s-fwm"></span>' | replace: '[hour]', '<span data-hour class="t4s-pr__hrs t4s-fwm"></span>' }}
+  </div>
+  
+  {%- comment -%} Add promotional label after sold counter {%- endcomment -%}
+  {%- if bk_stts.promo_message != blank or product.metafields.custom.flash_promo != blank -%}
+    <div class="t4s-sold-promo-label">
+      <div class="t4s-sold-promo-content">
+        {{ bk_stts.promo_message | default: product.metafields.custom.flash_promo }}
+      </div>
+    </div>
+  {%- endif -%}
+
+  <style>
+  /* Promotional label for sold counter */
+  .t4s-sold-promo-label {
+    display: flex !important;
+    align-items: stretch;
+    background: #fff5f5;
+    border-left: 3px solid #ff4444;
+    margin-top: 8px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    border-radius: 0 4px 4px 0;
+    animation: subtlePulse 2s ease-in-out infinite;
+  }
+  
+  .t4s-sold-promo-content {
+    padding: 10px 14px;
+    color: #333;
+    flex-grow: 1;
+  }
+  
+  .t4s-sold-promo-content strong {
+    color: #ff4444;
+    font-weight: 600;
+  }
+  
+  @keyframes subtlePulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.95;
+    }
+  }
+  
+  /* Show label only when sold counter is visible */
+  .t4s-pr_flash_sold:not(.t4s-dn) + .t4s-sold-promo-label {
+    display: flex !important;
+  }
+</style>
 
                 {%- when 'order' -%}{% unless isProductAvailable %}{% continue %}{% endunless -%}{% if isPreoder and variants_size == 1 and bk_stts.hide_pre %}{% continue %}{% endif -%}
                   <div id="t4s-delivery{{ bk_id }}" class="t4s-pr_delivery  t4s-ch t4s-dn" data-order-delivery='{ "timezone":false, "format_day":"{{ bk_stts.frm_day }}", "mode":"{{ bk_stts.mode }}", "cut_day": {{ bk_stts.cut_day | json }}, "estimateStartDate": {{ meta_theme.estimateStartDate | default: bk_stts.ds | json }}, "estimateEndDate": {{ meta_theme.estimateEndDate | default: bk_stts.de | json }}, "time":{{ bk_stts.time | default: 19041994 | json }}, "hideWithPreorder":{{ bk_stts.hide_pre }} }' {{ block.shopify_attributes }}>

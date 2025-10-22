@@ -139,11 +139,8 @@
         };
     }
     
-    /**
-     * Check if cart meets threshold
-     */
-    async function checkCartThreshold() {
-    if (state.isLoading || state.isActive || state.hasShownPopup) {
+async function checkCartThreshold() {
+    if (state.isLoading || state.isActive) {
         return;
     }
     
@@ -151,28 +148,41 @@
         const cartData = await getCartData();
         state.currentCartTotal = cartData.total_price;
         
-        // Check if user already has ANY free gift from the free-gifts-collection
-        const hasFreeGift = cartData.items.some(item => 
-            item.properties && (
-                item.properties['_free_product'] === 'true' ||
-                item.properties['_free_product'] === true
-            )
-        );
+        // ONLY check for _free_product, IGNORE _free_sample
+        const hasFreeProduct = cartData.items.some(item => {
+            if (!item.properties) return false;
+            
+            // ONLY look for _free_product, not _free_sample
+            return item.properties['_free_product'] === 'true' || 
+                   item.properties['_free_product'] === true;
+            // NOT checking for _free_sample - that's a different system
+        });
         
-        if (hasFreeGift) {
-            console.log('🎁 User already has a free gift, skipping popup');
-            markAsCompleted(); // Prevent popup from showing again
+        if (hasFreeProduct) {
+            console.log('🎁 User already has free PRODUCT from popup');
             return;
         }
         
-        console.log(`Cart total: ${cartData.total_price}, Threshold: ${CONFIG.cartThreshold}`);
+        // Check if only has free sample (this is OK, can still get free product)
+        const hasFreeSample = cartData.items.some(item => 
+            item.properties && (
+                item.properties['_free_sample'] === 'true' ||
+                item.properties['_free_sample'] === true
+            )
+        );
         
-        if (cartData.total_price >= CONFIG.cartThreshold) {
-            console.log('🎉 Cart threshold reached! Showing free product popup...');
+        if (hasFreeSample) {
+            console.log('📦 Has free sample (€20 gift) but can still get free product (€50 gift)');
+        }
+        
+        console.log(`Cart: €${(cartData.total_price/100).toFixed(2)}, Threshold: €50`);
+        
+        if (cartData.total_price >= CONFIG.cartThreshold && !state.hasShownPopup) {
+            console.log('🎉 Eligible for free product popup!');
             showFreeProductPopup();
         }
     } catch (error) {
-        console.error('Error checking cart threshold:', error);
+        console.error('Error:', error);
     }
 }
     
@@ -831,11 +841,19 @@ function debugPopupVisibility() {
             state.productData.get(index)
         );
         
-        // Add products to cart - but only add the first one to enforce collection limit
-        const productData = selectedData[0]; // Only add 1 product from collection
-        await addProductToCart(productData);
-        
-        showNotification(getTranslation('success', 'Free product added to cart! 🎉'), 'success');
+// Add products to cart - but only add the first one to enforce collection limit
+const productData = selectedData[0]; // Only add 1 product from collection
+const result = await addProductToCart(productData);  // CHANGE: Store the result
+
+// FIX #3: ADD THESE LINES HERE - TRIGGER GIFT NOTIFICATION
+const giftName = result.title || result.product_title || productData.title;
+if (window.showFreeGiftNotification) {
+    console.log('Notification function exists?', typeof window.showFreeGiftNotification);
+    window.showFreeGiftNotification(giftName);
+    console.log('✅ Gift notification triggered');
+}
+
+showNotification(getTranslation('success', 'Free product added to cart! 🎉'), 'success');
         
         // Mark as completed when products are successfully added
         markAsCompleted();
@@ -858,7 +876,7 @@ function debugPopupVisibility() {
         elements.addButton.disabled = false;
     }
 }
-    
+
     /**
      * Add single product to cart
      */
@@ -1025,4 +1043,377 @@ function debugPopupVisibility() {
     // Cleanup on page unload
     window.addEventListener('beforeunload', cleanup);
     
+})();
+
+(function() {
+  'use strict';
+  
+  // Configuration
+  const NOTIFICATION_DURATION = 4000; // Slightly longer for free gifts
+  const NOTIFICATION_ID = 'free-gift-notification-popup';
+  
+  // Create notification HTML for free gift
+  function createFreeGiftNotificationHTML() {
+    // Check if already exists
+    if (document.getElementById(NOTIFICATION_ID)) return;
+    
+    const notificationHTML = `
+      <div id="${NOTIFICATION_ID}" class="free-gift-notification-popup">
+        <div class="notification-content">
+          <svg class="gift-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="8" width="18" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M3 8h18v4H3z" fill="currentColor" opacity="0.2"/>
+            <rect x="10" y="3" width="4" height="18" fill="currentColor"/>
+            <path d="M7 3h10l-2 5H9L7 3z" fill="currentColor"/>
+            <circle cx="12" cy="5" r="1" fill="white"/>
+          </svg>
+          <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+          </svg>
+          <p class="notification-text" 
+             data-text-en="🎁 Your free gift was added successfully!" 
+             data-text-ar="🎁 تمت إضافة هديتك المجانية بنجاح!" 
+             data-text-de="🎁 Ihr kostenloses Geschenk wurde erfolgreich hinzugefügt!"
+            🎁 Your free gift was added successfully!
+          </p>
+          <p class="notification-subtext"
+             data-text-en="Check your cart to see your gift"
+             data-text-ar="تحقق من سلتك لرؤية هديتك"
+             data-text-de="Überprüfen Sie Ihren Warenkorb für Ihr Geschenk"
+            Check your cart to see your gift
+          </p>
+        </div>
+      </div>
+    `;
+    
+    // Add CSS if not already present
+    if (!document.getElementById('free-gift-notification-styles')) {
+      const styles = document.createElement('style');
+      styles.id = 'free-gift-notification-styles';
+      styles.textContent = `
+        /* Free Gift Notification Styles */
+        .free-gift-notification-popup {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) scale(0);
+          background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+          border: 2px solid #4CAF50;
+          border-radius: 16px;
+          padding: 35px 45px;
+          box-shadow: 0 15px 40px rgba(76, 175, 80, 0.3);
+          z-index: 9999999;
+          opacity: 0;
+          transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+          text-align: center;
+          min-width: 320px;
+          max-width: 90%;
+          pointer-events: none;
+        }
+        
+        .free-gift-notification-popup.show {
+          transform: translate(-50%, -50%) scale(1);
+          opacity: 1;
+          pointer-events: auto;
+        }
+        
+        .free-gift-notification-popup .notification-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 15px;
+        }
+        
+        /* Gift Icon Animation */
+        .free-gift-notification-popup .gift-icon {
+          width: 50px;
+          height: 50px;
+          color: #4CAF50;
+          position: absolute;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          opacity: 0;
+          animation: giftBounce 0.6s 0.2s forwards;
+        }
+        
+        @keyframes giftBounce {
+          0% {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-20px) scale(0.5);
+          }
+          50% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(5px) scale(1.1);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+          }
+        }
+        
+        /* Checkmark Animation */
+        .free-gift-notification-popup .checkmark {
+          width: 52px;
+          height: 52px;
+          margin-top: 40px;
+        }
+        
+        .free-gift-notification-popup .checkmark-circle {
+          stroke-dasharray: 166;
+          stroke-dashoffset: 166;
+          stroke-width: 3;
+          stroke-miterlimit: 10;
+          stroke: #4CAF50;
+          fill: none;
+          animation: strokeCircle 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+        
+        .free-gift-notification-popup .checkmark-check {
+          transform-origin: 50% 50%;
+          stroke-dasharray: 48;
+          stroke-dashoffset: 48;
+          stroke-width: 3;
+          stroke: #4CAF50;
+          animation: strokeCheck 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+        
+        @keyframes strokeCircle {
+          100% {
+            stroke-dashoffset: 0;
+          }
+        }
+        
+        @keyframes strokeCheck {
+          100% {
+            stroke-dashoffset: 0;
+          }
+        }
+        
+        /* Text Styling */
+        .free-gift-notification-popup .notification-text {
+          margin: 10px 0 5px;
+          font-size: 18px;
+          color: #2e7d32;
+          font-weight: 600;
+          line-height: 1.5;
+          font-family: inherit;
+          animation: fadeInUp 0.5s 0.9s forwards;
+          opacity: 0;
+        }
+        
+        .free-gift-notification-popup .notification-subtext {
+          margin: 0;
+          font-size: 14px;
+          color: #666;
+          font-weight: 400;
+          line-height: 1.4;
+          font-family: inherit;
+          animation: fadeInUp 0.5s 1s forwards;
+          opacity: 0;
+        }
+        
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        /* Sparkle Effect */
+        .free-gift-notification-popup::before,
+        .free-gift-notification-popup::after {
+          content: '✨';
+          position: absolute;
+          font-size: 20px;
+          animation: sparkle 1.5s linear infinite;
+        }
+        
+        .free-gift-notification-popup::before {
+          top: 15px;
+          left: 20px;
+          animation-delay: 0s;
+        }
+        
+        .free-gift-notification-popup::after {
+          top: 15px;
+          right: 20px;
+          animation-delay: 0.75s;
+        }
+        
+        @keyframes sparkle {
+          0%, 100% {
+            opacity: 0;
+            transform: scale(0.5) rotate(0deg);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1) rotate(180deg);
+          }
+        }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 480px) {
+          .free-gift-notification-popup {
+            padding: 25px 30px;
+            min-width: 280px;
+          }
+          
+          .free-gift-notification-popup .notification-text {
+            font-size: 16px;
+          }
+          
+          .free-gift-notification-popup .notification-subtext {
+            font-size: 13px;
+          }
+          
+          .free-gift-notification-popup .gift-icon {
+            width: 40px;
+            height: 40px;
+          }
+        }
+        
+        /* Dark mode support */
+        [data-theme="dark"] .free-gift-notification-popup {
+          background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+          border-color: #66BB6A;
+          box-shadow: 0 15px 40px rgba(102, 187, 106, 0.4);
+        }
+        
+        [data-theme="dark"] .free-gift-notification-popup .notification-text {
+          color: #66BB6A;
+        }
+        
+        [data-theme="dark"] .free-gift-notification-popup .notification-subtext {
+          color: #aaa;
+        }
+      `;
+      document.head.appendChild(styles);
+    }
+    
+    const div = document.createElement('div');
+    div.innerHTML = notificationHTML;
+    document.body.appendChild(div.firstElementChild);
+  }
+  
+  // Get current language
+  function getCurrentLanguage() {
+    const lang = document.documentElement.lang || 
+                 document.querySelector('html').getAttribute('lang') || 
+                 window.Shopify?.locale || 
+                 window.theme?.language ||
+                 'en';
+    return lang.toLowerCase().substring(0, 2);
+  }
+  
+  // Show free gift notification
+  function showFreeGiftNotification(giftName = null) {
+    const popup = document.getElementById(NOTIFICATION_ID);
+    if (!popup) {
+      createFreeGiftNotificationHTML();
+      return showFreeGiftNotification(giftName);
+    }
+    
+    const textElement = popup.querySelector('.notification-text');
+    const subtextElement = popup.querySelector('.notification-subtext');
+    const currentLang = getCurrentLanguage();
+    
+    // Set localized text
+    const textKey = `data-text-${currentLang}`;
+    let localizedText = textElement.getAttribute(textKey) || 
+                       textElement.getAttribute('data-text-en');
+    
+    // If gift name is provided, customize the message
+    if (giftName) {
+      const customMessages = {
+        'en': `🎁 "${giftName}" was added as your free gift!`,
+        'ar': `🎁 تمت إضافة "${giftName}" كهدية مجانية!`,
+        'de': `🎁 "${giftName}" wurde als Ihr kostenloses Geschenk hinzugefügt!`,
+      };
+      localizedText = customMessages[currentLang] || customMessages['en'];
+    }
+    
+    textElement.textContent = localizedText;
+    
+    // Set localized subtext
+    const subtextKey = `data-text-${currentLang}`;
+    const localizedSubtext = subtextElement.getAttribute(subtextKey) || 
+                            subtextElement.getAttribute('data-text-en');
+    subtextElement.textContent = localizedSubtext;
+    
+    // Reset animations
+    const checkmarkCircle = popup.querySelector('.checkmark-circle');
+    const checkmarkCheck = popup.querySelector('.checkmark-check');
+    const giftIcon = popup.querySelector('.gift-icon');
+    
+    // Reset all animations
+    [checkmarkCircle, checkmarkCheck, giftIcon, textElement, subtextElement].forEach(el => {
+      if (el) {
+        el.style.animation = 'none';
+        el.offsetHeight; // Force reflow
+        el.style.animation = '';
+      }
+    });
+    
+    // Show popup
+    popup.classList.add('show');
+    
+    // Play a subtle sound effect if available
+    try {
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBz');
+      audio.volume = 0.3;
+      audio.play().catch(() => {}); // Ignore errors if audio fails
+    } catch (e) {}
+    
+    // Hide after duration
+    setTimeout(() => {
+      popup.classList.remove('show');
+    }, NOTIFICATION_DURATION);
+  }
+  
+  // Listen for free gift events
+  function listenForFreeGiftEvents() {
+    // Listen for custom events
+    ['free-gift:added', 'freeGift:added', 'cart:free-product-added'].forEach(eventName => {
+      document.addEventListener(eventName, function(e) {
+        const giftName = e.detail?.productTitle || e.detail?.title || null;
+        showFreeGiftNotification(giftName);
+      });
+    });
+    
+
+  }
+  
+  // Initialize
+  function init() {
+    createFreeGiftNotificationHTML();
+    listenForFreeGiftEvents();
+    
+    // Expose global function for testing
+    window.showFreeGiftNotification = showFreeGiftNotification;
+    
+    console.log('✅ Free gift notification system initialized');
+    console.log('💡 Test with: showFreeGiftNotification("Test Product Name")');
+  }
+  
+  // Start when DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  // Debug helper - ADD THIS AT END OF FILE
+window.resetFreeProductPopup = function() {
+    sessionStorage.removeItem('cart_free_products_completed');
+    if (window.cartFreePopup) {
+        window.cartFreePopup.state.hasShownPopup = false;
+        window.cartFreePopup.state.isActive = false;
+    }
+    console.log('✅ Popup reset');
+};
 })();

@@ -383,6 +383,35 @@
   .shopify-section-header-sticky [data-header-height] {
     position: relative;
   }
+
+
+
+
+  /* Fix mobile menu z-index to appear above language toggle */
+  @media (max-width: 1024px) {
+    #t4s-menu-drawer {
+      z-index: 9999 !important;
+    }
+    
+    #t4s-menu-drawer + .t4s-drawer-menu__close {
+      z-index: 10000 !important;
+    }
+    
+    .t4s-drawer-backdrop,
+    .t4s-backdrop {
+      z-index: 9998 !important;
+    }
+    
+    /* Hide language toggle when menu is open */
+    body:has(#t4s-menu-drawer[aria-hidden="false"]) .t4s-header__languages,
+    #t4s-menu-drawer[aria-hidden="false"] ~ * .t4s-header__languages,
+    .t4s-drawer-opened .t4s-header__languages {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+  }
 {%- endstyle -%}
 
 <div data-header-options='{ "isTransparent": {{ h_transparent }},"isSticky": {{ se_stts.sticky_header }},"hideScroldown": {{ se_stts.scroll_header }} }' class="t4s-header__wrapper t4s-pr t4s-header-layout_{{ se_stts.layout }} {% if h__bgimg != blank %} lazyloadt4s t4s-header__bgimg" data-bgset="{{ h__bgimg | image_url: width: 1 }}" data-ratio="{{ h__bgimg.aspect_ratio }}" data-sizes="auto"{% else %}"{% endif %}>

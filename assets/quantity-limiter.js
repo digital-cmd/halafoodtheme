@@ -1121,9 +1121,11 @@
         }
         
         // Check for duplicate items
-        const productMap = new Map();
+        const variantMap = new Map();
         state.cartData.items.forEach(item => {
-            const productId = item.product_id.toString();
+            const propertiesKey = item.properties ? 
+                JSON.stringify(Object.entries(item.properties).sort()) : '';
+            const uniqueKey = `${item.variant_id}-${propertiesKey}`;
             if (!productMap.has(productId)) {
                 productMap.set(productId, []);
             }
@@ -1131,7 +1133,7 @@
         });
         
         // Consolidate duplicates
-        for (const [productId, items] of productMap.entries()) {
+        for (const [uniqueKey, items] of variantMap.entries()) {
             if (items.length > 1) {
                 const limitInfo = getProductLimitInfo(parseInt(productId));
                 const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
