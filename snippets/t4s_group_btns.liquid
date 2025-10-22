@@ -76,6 +76,7 @@ t4s_group_btns_split
 	{%- if se_stts.show_search -%}
 	<div class="t4s-site-nav__icon t4s-site-nav__search">
 		{%- if isfrmSearch -%}
+			
 			  <style>
 			  	.t4s-search-header__form {
 						padding: 0;
@@ -212,7 +213,7 @@ t4s_group_btns_split
 						color: var(--accent-color);
 					}
 			  </style>	
-	      <div data-predictive-search data-sid="search-hidden" class="t4s-search-header__form-wrap t4s-search-header t4s-pr t4s-d-none t4s-d-lg-block">
+	      		<div data-predictive-search data-sid="search-hidden" class="t4s-search-header__form-wrap t4s-search-header t4s-pr t4s-d-none t4s-d-lg-block">
 					{%- liquid
 						assign collection = collections[settings.search_prs_suggest]
 						assign limit = 5 

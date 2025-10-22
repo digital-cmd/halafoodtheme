@@ -1,7 +1,8 @@
 /**
- * Gift Collection Search Filter
+ * Gift Collection Search Filter - FIXED VERSION
  * Hides 'free-gifts-collection' from all search interfaces
- * Version: 1.0.0
+ * WITHOUT interfering with predictive search functionality
+ * Version: 2.0.0 - FIXED
  */
 
 (function() {
@@ -14,25 +15,37 @@
     'free gift collection', 
     'free gifts',
     'gift collection',
-    'مجموعة الهدايا المجانية', // Arabic if needed
+    'مجموعة الهدايا المجانية', // Arabic
     'هدايا مجانية'
   ];
   
   const DEBUG_MODE = false; // Set to true for debugging
   
   /**
-   * Clear search-related cache items
+   * Clear ONLY gift-related search cache items (selective clearing)
+   * CRITICAL FIX: This prevents interference with predictive search functionality
    */
   function clearSearchCache() {
     if (typeof Storage === "undefined") return;
     
     try {
-      // Clear sessionStorage items
+      // Only clear cache items that contain gift collection references
+      const giftTermsPattern = /free[-_]?gift/i;
+      
+      // Clear sessionStorage items - but ONLY gift-related ones
       const sessionKeysToRemove = [];
       for (let i = 0; i < sessionStorage.length; i++) {
         const key = sessionStorage.key(i);
-        if (key && (key.includes('Search') || key.includes('search') || key.includes('t4s') || key.includes('predictive'))) {
-          sessionKeysToRemove.push(key);
+        if (key) {
+          // Check if the VALUE contains gift terms, not just the key
+          try {
+            const value = sessionStorage.getItem(key);
+            if (value && giftTermsPattern.test(value)) {
+              sessionKeysToRemove.push(key);
+            }
+          } catch(e) {
+            // Skip if we can't read the value
+          }
         }
       }
       sessionKeysToRemove.forEach(key => {
@@ -40,12 +53,19 @@
         if (DEBUG_MODE) console.log('Removed sessionStorage key:', key);
       });
       
-      // Clear localStorage search items
+      // Clear localStorage search items - but ONLY gift-related ones  
       const localKeysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (key.includes('Search') || key.includes('search') || key.includes('t4s') || key.includes('predictive'))) {
-          localKeysToRemove.push(key);
+        if (key) {
+          try {
+            const value = localStorage.getItem(key);
+            if (value && giftTermsPattern.test(value)) {
+              localKeysToRemove.push(key);
+            }
+          } catch(e) {
+            // Skip if we can't read the value
+          }
         }
       }
       localKeysToRemove.forEach(key => {
@@ -54,7 +74,7 @@
       });
       
       if (DEBUG_MODE) {
-        console.log('Gift Collection Filter: Search cache cleared successfully');
+        console.log('✅ Gift Collection Filter: Gift-related cache cleared (predictive search cache PRESERVED)');
       }
     } catch(e) {
       if (DEBUG_MODE) console.error('Error clearing search cache:', e);
@@ -101,8 +121,12 @@
     const searchForms = document.querySelectorAll('form[action*="search"], [data-frm-search]');
     
     searchForms.forEach(form => {
-      form.addEventListener('submit', function(e) {
-        const searchInput = form.querySelector('input[name="q"], [data-input-search]');
+      // Remove any existing listeners to prevent duplicates
+      const newForm = form.cloneNode(true);
+      form.parentNode.replaceChild(newForm, form);
+      
+      newForm.addEventListener('submit', function(e) {
+        const searchInput = this.querySelector('input[name="q"], [data-input-search]');
         if (searchInput && containsGiftTerms(searchInput.value)) {
           e.preventDefault();
           
@@ -186,13 +210,15 @@
   }
   
   /**
-   * Monitor AJAX search requests
+   * Monitor AJAX search requests (only in debug mode)
    */
   function monitorAjaxRequests() {
+    if (!DEBUG_MODE) return;
+    
     // Override fetch to monitor search requests
     const originalFetch = window.fetch;
     window.fetch = function(url, options) {
-      if (typeof url === 'string' && url.includes('search') && DEBUG_MODE) {
+      if (typeof url === 'string' && url.includes('search')) {
         console.log('🌐 AJAX Search Request:', url);
       }
       return originalFetch.apply(this, arguments);
@@ -204,10 +230,10 @@
    */
   function init() {
     if (DEBUG_MODE) {
-      console.log('🚀 Gift Collection Filter: Initializing...');
+      console.log('🚀 Gift Collection Filter: Initializing (FIXED VERSION)...');
     }
     
-    // Clear existing search cache
+    // CRITICAL FIX: Use selective cache clearing instead of clearing everything
     clearSearchCache();
     
     // Handle direct URL searches
@@ -226,7 +252,8 @@
     debugSearchResults();
     
     // Re-run form interception after dynamic content loads
-    setTimeout(interceptSearchForms, 2000);
+    // FIXED: Reduced timeout to avoid conflicts
+    setTimeout(interceptSearchForms, 1000);
     
     if (DEBUG_MODE) {
       console.log('✅ Gift Collection Filter: Initialization complete');
